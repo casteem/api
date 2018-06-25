@@ -1,0 +1,36 @@
+version: '3'
+
+volumes:
+  store:
+    driver: local
+  bundle:
+    driver: local
+
+services:
+  web:
+    build: .
+    ports:
+      - 3001:3001
+    volumes:
+      - .:/app
+      - bundle:/usr/local/bundle
+    links:
+      - db
+    # Keep the stdin open, so we can attach to our app container's process and do things such as
+    # byebug, etc:
+    stdin_open: true
+    # Enable sending signals (CTRL+C, CTRL+P + CTRL+Q) into the container:
+    tty: true
+    command: ./bin/start.sh
+    environment: &app_env
+      DB_HOST: db
+      PORT: 3001
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    volumes:
+      - store:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: steemhunt
+      POSTGRES_DB: steemhunt
