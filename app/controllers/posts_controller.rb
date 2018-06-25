@@ -211,6 +211,8 @@ class PostsController < ApplicationController
           { children: :desc }
         when 'payout'
           { payout_value: :desc }
+        when 'random'
+          Arel.sql('random()')
         else
           { hunt_score: :desc, payout_value: :desc }
         end
