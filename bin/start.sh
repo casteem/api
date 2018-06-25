@@ -10,7 +10,7 @@ fi
 rails db:environment:set RAILS_ENV=development
 
 # Reset db
-rails db:drop db:create db:migrate db:seed 
+rails db:drop db:create db:migrate db:seed
 
 # Start rails
 rails s -p $PORT -b 0.0.0.0
