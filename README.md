@@ -16,8 +16,8 @@ Docker should be already installed to follow this process. More info about docke
 Run following codes to build docker:
 
 ```bash
-> docker-compose build
-> docker-compose up
+docker-compose build
+docker-compose up
 ```
 
 Then a server is up on `http://localhost:3001`
