@@ -176,7 +176,7 @@ class User < ApplicationRecord
     # - also reduce score for fresh accounts
     score = if avg_voting_count_per_user <= 1.1 || voting_count < 20
       0.1
-    elsif voting_count < 50
+    elsif voting_count < 40 || (weighted_receiver_count / total_weight.to_f < 0.45)
       0.5 * weighted_receiver_count / total_weight.to_f
     else
       weighted_receiver_count / total_weight.to_f
