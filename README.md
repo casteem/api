@@ -11,9 +11,9 @@
 ### Using Docker
 
 Using docker is probably the easiest way to setup your local API if you want to work on mostly front-end part.
-Docker should be already installed to follow this process. More info about docker setup is [here](https://docs.docker.com/docker-for-mac/install/).
+Docker should be already installed to follow this process. More info about docker setup is on [here](https://docs.docker.com/docker-for-mac/install/).
 
-Run following codes to build docker:
+Run following commands to build docker:
 
 ```bash
 docker-compose build
