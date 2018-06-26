@@ -206,7 +206,7 @@ class PostsController < ApplicationController
         when 'created'
           { created_at: :desc }
         when 'vote_count'
-          'json_array_length(active_votes) DESC'
+          'json_array_length(valid_votes) DESC'
         when 'comment_count'
           { children: :desc }
         when 'payout'
