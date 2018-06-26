@@ -139,12 +139,12 @@ class User < ApplicationRecord
   # MARK: - Diversity Score
 
   def votee
-    Post.from('posts, json_array_elements(posts.valid_votes) v').
+    Post.from('posts, json_array_elements(posts.valid_votes) v').where('created_at > ?', 30.days.ago).
       where("v->>'voter' = ?", username).group(:author).count
   end
 
   def votee_weight
-    Post.from('posts, json_array_elements(posts.valid_votes) v').
+    Post.from('posts, json_array_elements(posts.valid_votes) v').where('created_at > ?', 30.days.ago).
       where("v->>'voter' = ?", username).group(:author).sum("(v#>>'{percent}')::integer")
   end
 
@@ -153,8 +153,8 @@ class User < ApplicationRecord
   # if a user voted 100 times (with the same weight to all):
   # - only 1 receiver => 0.01
   # - 90 receivers => 0.9
-  def diversity_score
-    return cached_diversity_score if cached_diversity_score >= 0 && diversity_score_updated_at && diversity_score_updated_at > 24.hours.ago
+  def diversity_score(force = false)
+    return cached_diversity_score if cached_diversity_score >= 0 && diversity_score_updated_at && diversity_score_updated_at > 24.hours.ago && !force
 
     counts = votee
     weights = votee_weight
@@ -174,9 +174,9 @@ class User < ApplicationRecord
     # because they can only vote once per every users anyway
     # - minimize fresh account abusing by make threshold avg_voting_count_per_user to 1.1
     # - also reduce score for fresh accounts
-    score = if avg_voting_count_per_user <= 1.1 || voting_count < 20
+    score = if avg_voting_count_per_user <= 1.1 || voting_count < 10
       0.1
-    elsif voting_count < 40 || (weighted_receiver_count / total_weight.to_f < 0.45)
+    elsif voting_count < 20 || (weighted_receiver_count / total_weight.to_f < 0.45)
       0.5 * weighted_receiver_count / total_weight.to_f
     else
       weighted_receiver_count / total_weight.to_f
@@ -184,8 +184,22 @@ class User < ApplicationRecord
 
     # higher weight if user spent 50 full votes & maintained a good diversity
     # exclude dust thresholds (< 500 SP)
-    if score > 0.64 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
+    if score > 0.60 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
       score *= 1.5
+    end
+
+    if self.circle_vote_count >= 50
+      score *= 0.05
+    elsif self.circle_vote_count >= 40
+      score *= 0.1
+    elsif self.circle_vote_count >= 30
+      score *= 0.15
+    elsif self.circle_vote_count >= 20
+      score *= 0.2
+    elsif self.circle_vote_count >= 10
+      score *= 0.3
+    elsif self.circle_vote_count >= 5
+      score *= 0.5
     end
 
     self.cached_diversity_score = score
@@ -193,5 +207,35 @@ class User < ApplicationRecord
     self.save!
 
     self.cached_diversity_score
+  end
+
+  def detect_circle(chain = false)
+    lists =  User.find_by(username: username).votee.sort_by {|k,v| v}.reverse
+
+    circle = {}
+    jerk_score = 0
+    lists.first(10).each do |u|
+      other_list =  User.find_by(username: u[0]).votee
+      if other_list[username] && other_list[username] > 2
+        circle[u[0]] = { sent: u[1], received: other_list[username] }
+        jerk_score += [u[1], other_list[username]].min
+      end
+    end
+
+    old_ds = self.diversity_score
+    self.circle_vote_count = jerk_score
+    ds = self.diversity_score(true)
+
+    puts "@#{username} --> DS: #{old_ds} -> #{ds}"
+    puts "Circle: #{circle}"
+    puts "Jerk Score: #{jerk_score}"
+
+    if chain
+      circle.each do |k, hash|
+        if hash[:sent] > 3 || hash[:received] > 3
+          User.find_by(username: k).try(:detect_circle)
+        end
+      end
+    end
   end
 end
