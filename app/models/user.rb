@@ -168,14 +168,9 @@ class User < ApplicationRecord
       total_weight += weights[id]
     end
 
-    avg_voting_count_per_user = voting_count / counts.count.to_f
-
-    # users on day 1 always have 1.0 weight on diversity score
-    # because they can only vote once per every users anyway
-    # - minimize fresh account abusing by make threshold avg_voting_count_per_user to 1.1
-    # - also reduce score for fresh accounts
-    score = if avg_voting_count_per_user <= 1.1 || voting_count < 10
-      0.1
+    # reduce score for fresh accounts
+    score = if voting_count < 10
+      0.2
     elsif voting_count < 20 || (weighted_receiver_count / total_weight.to_f < 0.45)
       0.5 * weighted_receiver_count / total_weight.to_f
     else
