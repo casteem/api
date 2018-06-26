@@ -211,7 +211,7 @@ class User < ApplicationRecord
     jerk_score = 0
     lists.first(10).each do |u|
       other_list =  User.find_by(username: u[0]).votee
-      if other_list[username] && other_list[username] > 2
+      if other_list[username] && other_list[username] >= 2
         circle[u[0]] = { sent: u[1], received: other_list[username] }
         jerk_score += [u[1], other_list[username]].min
       end
