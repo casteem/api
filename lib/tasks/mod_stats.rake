@@ -12,11 +12,15 @@ task :mod_stats => :environment do |t, args|
   active_count = posts.active.where(is_verified: true).count
   pass_rate = 100 * active_count / verified_count.to_f
 
-  groups = posts.active.group(:verified_by).count
+  all_verification = posts.where(is_verified: true).group(:verified_by).count
+  active_verification = posts.active.where(is_verified: true).group(:verified_by).count
   User::MODERATOR_ACCOUNTS.each do |u|
-    groups[u] = 0 if groups[u].nil?
+    unless User::ADMIN_ACCOUNTS.include?(u)
+      all_verification[u] = 0 if all_verification[u].nil?
+      active_verification[u] = 0 if active_verification[u].nil?
+    end
   end
-  groups = groups.sort_by { |_, v| v}.reverse
+  all_verification = all_verification.sort_by { |_, v| v}.reverse
 
   logger = SLogger.new('stats')
   logger.log "==========\nDaily Stats on #{formatted_date(Date.yesterday)}\n==========", true
@@ -24,8 +28,8 @@ task :mod_stats => :environment do |t, args|
   logger.log "Verified: #{verified_count} (#{total_count - verified_count} unverified, will roll-over)"
   logger.log "Review Pass Rate: #{pass_rate.round(2)}% (#{active_count} passed / #{verified_count - active_count} hidden)"
   logger.log "Moderation Count:"
-  groups.each do |g|
-    logger.log "@#{g[0]}: #{g[1]}"
+  all_verification.each do |g|
+    logger.log "@#{g[0]}: #{g[1]} (Pass rate: #{(100 * active_verification[g[0]] / g[1]).round(2) rescue 0}%)"
   end
   logger.log "==========", true
 end
