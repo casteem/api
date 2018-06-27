@@ -1,4 +1,5 @@
 require 'radiator'
+require 's_logger'
 
 class User < ApplicationRecord
   validates_presence_of :username
@@ -204,7 +205,9 @@ class User < ApplicationRecord
     self.cached_diversity_score
   end
 
-  def detect_circle(chain = false)
+  def detect_circle(chain = false, logger = nil)
+    logger = PLogger.new unless logger
+
     lists =  User.find_by(username: username).votee.sort_by {|k,v| v}.reverse
 
     circle = {}
@@ -221,14 +224,20 @@ class User < ApplicationRecord
     self.circle_vote_count = jerk_score
     ds = self.diversity_score(true)
 
-    puts "@#{username} --> DS: #{old_ds} -> #{ds}"
-    puts "Circle: #{circle}"
-    puts "Jerk Score: #{jerk_score}"
+    if (old_ds - ds).abs > 0.0001
+      logger.log "@#{username} --> DS: #{old_ds} -> #{ds}"
+      logger.log " - Circle: #{circle}"
+      logger.log " - Jerk Score: #{jerk_score}"
+      chain = true if chain == :optional
+    else
+      logger.log "@#{username} --> No diff"
+      chain = false if chain == :optional
+    end
 
     if chain
       circle.each do |k, hash|
         if hash[:sent] > 3 || hash[:received] > 3
-          User.find_by(username: k).try(:detect_circle)
+          User.find_by(username: k).detect_circle(false, logger)
         end
       end
     end

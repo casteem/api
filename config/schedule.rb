@@ -28,3 +28,7 @@ end
 every :day, at: '06:00am' do
   command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} dump"
 end
+
+every :day, at: '06:00pm' do
+  command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} detect_jerk"
+end

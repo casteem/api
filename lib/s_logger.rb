@@ -31,3 +31,13 @@ class SLogger
     end
   end
 end
+
+class PLogger
+  def log(text, flush = false, newline = true)
+    if newline
+      puts text
+    else
+      print text
+    end
+  end
+end
