@@ -29,7 +29,9 @@ task :mod_stats => :environment do |t, args|
   logger.log "Review Pass Rate: #{pass_rate.round(2)}% (#{active_count} passed / #{verified_count - active_count} hidden)"
   logger.log "Moderation Count:"
   all_verification.each do |g|
-    logger.log "@#{g[0]}: #{g[1]} (Pass rate: #{(100 * active_verification[g[0]] / g[1]).round(2) rescue 0}%)"
+    unless g[0].blank?
+      logger.log "@#{g[0]}: #{g[1]} (Pass rate: #{(100 * active_verification[g[0]] / g[1]).round(2) rescue 0}%)"
+    end
   end
   logger.log "==========", true
 end
