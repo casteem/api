@@ -178,12 +178,6 @@ class User < ApplicationRecord
       weighted_receiver_count / total_weight.to_f
     end
 
-    # higher weight if user spent 50 full votes & maintained a good diversity
-    # exclude dust thresholds (< 500 SP)
-    if score > 0.60 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
-      score *= 1.5
-    end
-
     if self.circle_vote_count >= 50
       score *= 0.05
     elsif self.circle_vote_count >= 40
@@ -196,6 +190,12 @@ class User < ApplicationRecord
       score *= 0.3
     elsif self.circle_vote_count >= 5
       score *= 0.5
+    end
+
+    # higher weight if user spent 50 full votes & maintained a good diversity
+    # exclude dust thresholds (< 500 SP)
+    if score > 0.60 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
+      score *= 1.5
     end
 
     self.cached_diversity_score = score
@@ -230,7 +230,7 @@ class User < ApplicationRecord
       logger.log " - Jerk Score: #{jerk_score}"
       chain = true if chain == :optional
     else
-      logger.log "@#{username} --> No diff"
+      logger.log "@#{username} --> No diff (DS: #{ds} / Jerk Count: #{jerk_score}"
       chain = false if chain == :optional
     end
 
