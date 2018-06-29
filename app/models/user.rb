@@ -194,7 +194,7 @@ class User < ApplicationRecord
 
     # higher weight if user spent 50 full votes & maintained a good diversity (but not random)
     # exclude dust thresholds (< 500 SP)
-    if score < 0.90 && score > 0.60 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
+    if score < 0.90 && score > 0.55 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
       score *= 1.5
     end
 
