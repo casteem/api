@@ -179,15 +179,15 @@ class User < ApplicationRecord
     end
 
     if self.circle_vote_count >= 50
-      score *= 0.05
+      score *= 0.01
     elsif self.circle_vote_count >= 40
-      score *= 0.1
+      score *= 0.05
     elsif self.circle_vote_count >= 30
-      score *= 0.15
+      score *= 0.1
     elsif self.circle_vote_count >= 20
-      score *= 0.2
+      score *= 0.15
     elsif self.circle_vote_count >= 10
-      score *= 0.3
+      score *= 0.25
     elsif self.circle_vote_count >= 5
       score *= 0.5
     end
