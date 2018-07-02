@@ -16,7 +16,7 @@ task :reward_sponsors, [:week, :steem_to_distribute, :write]=> :environment do |
 
   begin
     # REF: https://helloacm.com/tools/steemit/delegators/
-    uri = URI('https://steakovercooked.com/api/steemit/delegators/?id=steemhunt&hash=5b0e69c0ad0a3584d7beda2b1fba1932')
+    uri = URI('https://steakovercooked.com/api/steemit/delegators/?id=steemhunt&hash=805d33634bbcc61021701a4aec09d724')
     response = Net::HTTP.get(uri)
     json = JSON.parse(response)
   rescue => e
