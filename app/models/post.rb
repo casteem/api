@@ -8,7 +8,6 @@ class Post < ApplicationRecord
   validates_uniqueness_of :url, message: '- The product has already posted'
   validates_uniqueness_of :author, scope: :permlink, message: '- The product has already posted'
 
-  # TODO_ABV: Uncomment for efficiency
   before_update :set_verified_at, if: :is_verified_changed?
   before_update :calculate_hunt_score, if: :active_votes_changed?
   scope :today, -> { where('created_at >= ?', Time.zone.today.to_time) }
