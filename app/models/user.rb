@@ -198,7 +198,7 @@ class User < ApplicationRecord
       score *= 0.5
     end
 
-    # Not enough hunts to calculate circle votings
+    # Active hunter advantage / disadvantage
     hunt_count = Post.where(author: username).active.count
     if hunt_count < 1
       score *= 0.2
@@ -206,12 +206,16 @@ class User < ApplicationRecord
       score *= 0.5
     elsif hunt_count < 10
       score *= 0.8
+    elsif hunt_count >= 20
+      score *= 1.5
     end
 
-    # Higher weight if user spent 50 full votes & maintained a good diversity (but not random)
-    # exclude dust thresholds (< 500 SP)
-    if score < 0.90 && score > 0.55 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
-      score *= 1.5
+    # Good curator advantage
+    if score < 0.90 && score > 0.55 && created_at < 2.weeks.ago
+      # Casted 50 full votes
+      score *= 1.5 if weighted_receiver_count > 500000 && vesting_shares > 1000000
+      score *= 1.5 if vesting_shares > 10000000
+      score *= 1.5 if vesting_shares > 20000000
     end
 
     self.cached_diversity_score = score
