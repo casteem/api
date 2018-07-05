@@ -21,6 +21,9 @@ class User < ApplicationRecord
     where.not(encrypted_token: '').where('reputation >= ?', 35).
     where('blacklisted_at IS NULL OR blacklisted_at < ?', 1.month.ago)
   }
+  scope :for_a_month, -> {
+    where('created_at > ?', 30.days.ago)
+  }
 
   def dau?
     last_logged_in_at > Time.zone.today.to_time
@@ -140,12 +143,12 @@ class User < ApplicationRecord
   # MARK: - Diversity Score
 
   def votee
-    Post.from('posts, json_array_elements(posts.valid_votes) v').where('created_at > ?', 30.days.ago).
+    Post.from('posts, json_array_elements(posts.valid_votes) v').for_a_month.
       where("v->>'voter' = ?", username).group(:author).count
   end
 
   def votee_weight
-    Post.from('posts, json_array_elements(posts.valid_votes) v').where('created_at > ?', 30.days.ago).
+    Post.from('posts, json_array_elements(posts.valid_votes) v').for_a_month.
       where("v->>'voter' = ?", username).group(:author).sum("(v#>>'{percent}')::integer")
   end
 
@@ -199,15 +202,16 @@ class User < ApplicationRecord
     end
 
     # Active hunter advantage / disadvantage
-    hunt_count = Post.where(author: username).active.count
-    if hunt_count < 1
-      score *= 0.2
-    elsif hunt_count < 5
-      score *= 0.5
-    elsif hunt_count < 10
-      score *= 0.8
-    elsif hunt_count >= 20
-      score *= 1.5
+    unless moderator?
+      hunt_count = Post.where(author: username).for_a_month.active.count
+
+      if hunt_count < 1
+        score *= 0.5
+      elsif hunt_count < 3
+        score *= 0.8
+      elsif hunt_count >= 10
+        score *= 1.5
+      end
     end
 
     # Good curator advantage
