@@ -171,13 +171,16 @@ class User < ApplicationRecord
 
     score = weighted_receiver_count / total_weight.to_f
 
-    # Lower the lower
-    score *= 0.5 if score < 0.45
+    if score.nan?
+      # Default 1.0
+      score = 1.0
+    elsif score < 0.45
+      # Lower the lower
+      score *= 0.5
+    end
 
     # Not enough votings for DS calculation
     if voting_count < 10
-      score *= 0.2
-    elsif voting_count < 20
       score *= 0.5
     elsif voting_count < 30
       score *= 0.8
