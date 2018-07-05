@@ -169,15 +169,21 @@ class User < ApplicationRecord
       total_weight += weights[id]
     end
 
-    # reduce score for fresh accounts
-    score = if voting_count < 10
-      0.2
-    elsif voting_count < 20 || (weighted_receiver_count / total_weight.to_f < 0.45)
-      0.5 * weighted_receiver_count / total_weight.to_f
-    else
-      weighted_receiver_count / total_weight.to_f
+    score = weighted_receiver_count / total_weight.to_f
+
+    # Lower the lower
+    score *= 0.5 if score < 0.45
+
+    # Not enough votings for DS calculation
+    if voting_count < 10
+      score *= 0.2
+    elsif voting_count < 20
+      score *= 0.5
+    elsif voting_count < 30
+      score *= 0.8
     end
 
+    # Circle voting penalty
     if self.circle_vote_count >= 50
       score *= 0.01
     elsif self.circle_vote_count >= 40
@@ -192,7 +198,17 @@ class User < ApplicationRecord
       score *= 0.5
     end
 
-    # higher weight if user spent 50 full votes & maintained a good diversity (but not random)
+    # Not enough hunts to calculate circle votings
+    hunt_count = Post.where(author: username).active.count
+    if hunt_count < 1
+      score *= 0.2
+    elsif hunt_count < 5
+      score *= 0.5
+    elsif hunt_count < 10
+      score *= 0.8
+    end
+
+    # Higher weight if user spent 50 full votes & maintained a good diversity (but not random)
     # exclude dust thresholds (< 500 SP)
     if score < 0.90 && score > 0.55 && weighted_receiver_count > 500000 && vesting_shares > 1000000 && created_at < 2.weeks.ago
       score *= 1.5
