@@ -8,12 +8,12 @@ task :mod_stats => :environment do |t, args|
 
   posts = Post.where('created_at >= ? AND created_at < ?', yesterday, today)
   total_count = posts.count
-  verified_count = posts.where(is_verified: true).count
-  active_count = posts.active.where(is_verified: true).count
+  verified_count = posts.verified.count
+  active_count = posts.active.verified.count
   pass_rate = 100 * active_count / verified_count.to_f
 
-  all_verification = posts.where(is_verified: true).group(:verified_by).count
-  active_verification = posts.active.where(is_verified: true).group(:verified_by).count
+  all_verification = posts.verified.group(:verified_by).count
+  active_verification = posts.active.verified.group(:verified_by).count
   User::MODERATOR_ACCOUNTS.each do |u|
     unless User::ADMIN_ACCOUNTS.include?(u)
       all_verification[u] = 0 if all_verification[u].nil?

@@ -9,9 +9,15 @@ class Post < ApplicationRecord
   validates_uniqueness_of :author, scope: :permlink, message: '- The product has already posted'
 
   # TODO_ABV: Uncomment for efficiency
+  before_update :set_verified_at, if: :is_verified_changed?
   before_update :calculate_hunt_score, if: :active_votes_changed?
   scope :today, -> { where('created_at >= ?', Time.zone.today.to_time) }
   scope :active, -> { where(is_active: true) }
+  scope :verified, -> { where(is_verified: true) }
+
+  def set_verified_at
+    self.verified_at = Time.now
+  end
 
   # NOTE: JSON structure
   # - active_votes: { "voter": "tabris", "weight": 645197, "rshares": "401660828088", "percent": 10000, "reputation": "7112685098931", "time": "2018-02-16T20:14:48" }
