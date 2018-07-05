@@ -21,9 +21,6 @@ class User < ApplicationRecord
     where.not(encrypted_token: '').where('reputation >= ?', 35).
     where('blacklisted_at IS NULL OR blacklisted_at < ?', 1.month.ago)
   }
-  scope :for_a_month, -> {
-    where('created_at > ?', 30.days.ago)
-  }
 
   def dau?
     last_logged_in_at > Time.zone.today.to_time

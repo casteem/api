@@ -13,6 +13,10 @@ class Post < ApplicationRecord
   scope :today, -> { where('created_at >= ?', Time.zone.today.to_time) }
   scope :active, -> { where(is_active: true) }
 
+  scope :for_a_month, -> {
+    where('created_at > ?', 30.days.ago)
+  }
+
   # NOTE: JSON structure
   # - active_votes: { "voter": "tabris", "weight": 645197, "rshares": "401660828088", "percent": 10000, "reputation": "7112685098931", "time": "2018-02-16T20:14:48" }
   # - valid_votes: { "voter": "tabris", "percent": 10000, "score": 3.0 }
