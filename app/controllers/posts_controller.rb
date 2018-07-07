@@ -8,12 +8,12 @@ class PostsController < ApplicationController
   # GET /posts
   def index
     days_ago = params[:days_ago].to_i
-    today = Time.zone.today.to_time
+    today = Time.zone.today
 
     @posts = if days_ago > 0
-      Post.where('created_at >= ? AND created_at < ?', today - days_ago.days, today - (days_ago - 1).days)
+      Post.where(session_date: today - days_ago.days)
     else
-      Post.where('created_at >= ?', today)
+      Post.where('session_date IS NULL OR session_date = ?', today)
     end
 
     if params[:sort] == 'unverified'

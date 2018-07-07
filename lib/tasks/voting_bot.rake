@@ -3,13 +3,19 @@ require 'utils'
 require 's_logger'
 
 desc 'Voting bot'
-task :voting_bot => :environment do |t, args|
+task :voting_bot, [:session] => :environment do |t, args|
+  SESSION_NUMBER = args[:session].to_i
+
   # NOTE: The total voting power is not a constant number like 1000
   #   it will be closer to 1100 because:
   #   when someone cast 100% voting when they have 80% vp left,
   #   it will deduct 0.8 * 100 * 0.02 = 1.6% vp (not 2.0%)
-  #
-  #   We need to fix this correctly later
+
+  TEST_MODE = false # Should be false on production
+  VOTING_SESSIONS = 6
+  SESSION_GAP = 24 / VOTING_SESSIONS
+  MAX_HUNTS_PER_SESSION = 50
+  TOTAL_VP_TO_USE = 1000.0 / VOTING_SESSIONS
 
   def current_voting_power(api = Radiator::Api.new)
     account = with_retry(3) do
@@ -26,24 +32,23 @@ task :voting_bot => :environment do |t, args|
     current_vp > 100 ? 100.0 : current_vp
   end
 
-  TEST_MODE = false # Should be false on production
-  TOTAL_VP_TO_USE = 1000.0
-  POWER_TOTAL_POST = if TEST_MODE || current_voting_power > 99.99
-    TOTAL_VP_TO_USE * 0.8
-  else
-    # NOTE:
-    # If current VP is 70%, we need to only use 10% VP (= 540 VP)
-    # This script should not run if POWER_TOTAL_POST < 0
-    (TOTAL_VP_TO_USE - (TOTAL_VP_TO_USE * (100 - current_voting_power) / 20)) * 0.8
-  end
+  # POWER_TOTAL_POST = if TEST_MODE || current_voting_power > 99.99
+  #   TOTAL_VP_TO_USE * 0.8
+  # else
+  #   # NOTE:
+  #   # If current VP is 70%, we need to only use 10% VP (= 540 VP)
+  #   # This script should not run if POWER_TOTAL_POST < 0
+  #   (TOTAL_VP_TO_USE - (TOTAL_VP_TO_USE * (100 - current_voting_power) / 20)) * 0.8
+  # end
+
+  POWER_TOTAL_POST = TOTAL_VP_TO_USE * 0.8
   POWER_TOTAL_COMMENT = POWER_TOTAL_POST * 0.125 # 10% of total VP
   POWER_PER_MOD_COMMENT = 0.60 # 120% on 200 posts, 240% on 400 posts
-  POWER_MAX = 100.0
-  MAX_POST_VOTING_COUNT = 1000
+  POWER_MAX = 20.0
 
   def get_minimum_power(size)
     min = POWER_TOTAL_POST / (size * 10.0)
-    min = 100 if min > 100
+    min = POWER_MAX if min > POWER_MAX
     min = 0.01 if min < 0.01
 
     min
@@ -128,8 +133,10 @@ task :voting_bot => :environment do |t, args|
   end
 
   def do_comment(author, permlink, rank, logger)
-    msg = "### Congratulation! Your hunt was ranked in #{rank.ordinalize} place on #{formatted_date(Date.yesterday)} on Steemhunt.\n" +
+    the_date = (Time.zone.now - 1.hour).beginning_of_day # should be yesterday on midnight voting session
+    msg = "### Congratulation! Your hunt was ranked in #{rank.ordinalize} place on #{SESSION_NUMBER.ordinalize} session on #{formatted_date(the_date)}.\n" +
       "We have upvoted your post for your contribution within our community.\n" +
+      "You will see the final top 10 on [Steemhunt](https://steemhunt.com) after midnight (#{formatted_date(the_date)} KST).\n" +
       "Thanks again and look forward to seeing your next hunt!\n\n" +
       "Want to chat? Join us on:\n" +
       "* Discord: https://discord.gg/mWXpgks\n" +
@@ -181,20 +188,21 @@ task :voting_bot => :environment do |t, args|
   logger = SLogger.new('voting-log')
 
   if POWER_TOTAL_POST < 0
-    logger.log "Less than 80% voting power left, STOP voting bot"
+    logger.log "Not enough voting power left, STOP voting bot"
     next
   end
 
   api = Radiator::Api.new
-  today = Time.zone.today.to_time
-  yesterday = (today - 1.day).to_time
+  base_date = (Time.zone.now - 1.hour).beginning_of_day # should be yesterday on midnight voting session
+  session_start = base_date + (SESSION_NUMBER * SESSION_GAP).hours
+  session_end = session_start + SESSION_GAP.hours
 
-  logger.log "\n==========\nVOTING STARTS with #{(POWER_TOTAL_POST * 1.25).round(2)}% TOTAL VP - #{formatted_date(yesterday)}", true
+  logger.log "\n==========\n POST VOTING STARTS with #{(POWER_TOTAL_POST * 1.25).round(2)}% VP - Session #{SESSION_NUMBER} on #{formatted_date(base_date)}", true
   logger.log "Current voting power: #{current_voting_power(api)}%"
-  posts = Post.where('created_at >= ? AND created_at < ?', yesterday, today).
+  posts = Post.where('verified_at >= ? AND verified_at < ?', session_start, session_end).
                order('hunt_score DESC').
-               limit(MAX_POST_VOTING_COUNT).to_a
-  logger.log "Total #{posts.size} posts found on #{formatted_date(yesterday)}\n==========", true
+               limit(MAX_HUNTS_PER_SESSION).to_a
+  logger.log "Total #{posts.size} posts found\n==========", true
 
   review_comments = []
   total_review_comment_count = 0

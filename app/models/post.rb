@@ -10,7 +10,7 @@ class Post < ApplicationRecord
 
   before_update :set_verified_at, if: :is_verified_changed?
   before_update :calculate_hunt_score, if: :active_votes_changed?
-  scope :today, -> { where('created_at >= ?', Time.zone.today.to_time) }
+  scope :live, -> { where(voting_session: nil) }
   scope :active, -> { where(is_active: true) }
   scope :verified, -> { where(is_verified: true) }
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_07_05_092340) do
+ActiveRecord::Schema.define(version: 2018_07_06_053413) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,10 +50,12 @@ ActiveRecord::Schema.define(version: 2018_07_05_092340) do
     t.float "hunt_score", default: 0.0
     t.json "valid_votes", default: []
     t.datetime "verified_at"
+    t.date "session_date"
+    t.integer "session_number"
     t.index "((((to_tsvector('english'::regconfig, (author)::text) || to_tsvector('english'::regconfig, (title)::text)) || to_tsvector('english'::regconfig, (tagline)::text)) || to_tsvector('english'::regconfig, immutable_array_to_string(tags, ' '::text))))", name: "index_posts_full_text", using: :gin
     t.index ["author", "permlink"], name: "index_posts_on_author_and_permlink", unique: true
-    t.index ["created_at"], name: "index_posts_on_created_at"
     t.index ["is_active"], name: "index_posts_on_is_active"
+    t.index ["session_date", "session_number"], name: "index_posts_on_session_date_and_session_number"
     t.index ["url"], name: "index_posts_on_url", unique: true
     t.index ["verified_at"], name: "index_posts_on_verified_at"
   end
