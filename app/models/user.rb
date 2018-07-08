@@ -13,7 +13,7 @@ class User < ApplicationRecord
     'geekgirl', 'playitforward'
   ]
   INFLUENCER_ACCOUNTS = [
-    'tabris'
+
   ]
   INFLUENCER_WEIGHT_BOOST = 5
   GUARDIAN_ACCOUNTS = [
