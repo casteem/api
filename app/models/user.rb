@@ -12,6 +12,10 @@ class User < ApplicationRecord
     'teamhumble', 'folken', 'urbangladiator', 'chronocrypto', 'dayleeo', 'fknmayhem', 'jayplayco', 'bitrocker2020', 'joannewong',
     'geekgirl', 'playitforward'
   ]
+  INFLUENCER_ACCOUNTS = [
+    'tabris'
+  ]
+  INFLUENCER_WEIGHT_BOOST = 5
   GUARDIAN_ACCOUNTS = [
     'folken', 'fknmayhem'
   ]
@@ -40,6 +44,10 @@ class User < ApplicationRecord
 
   def moderator?
     MODERATOR_ACCOUNTS.include?(username)
+  end
+
+  def influencer?
+    INFLUENCER_ACCOUNTS.include?(username)
   end
 
   def guardian?
@@ -95,7 +103,10 @@ class User < ApplicationRecord
       0.005
     end
 
-    weight * diversity_score
+    weight *= diversity_score
+    weight *= INFLUENCER_WEIGHT_BOOST if influencer?
+
+    weight
   end
 
   def hunt_score_by(weight)
@@ -215,11 +226,11 @@ class User < ApplicationRecord
     end
 
     # Good curator advantage
-    if score < 0.90 && score > 0.55 && created_at < 2.weeks.ago
+    if score < 0.90 && score > 0.50 && created_at < 2.weeks.ago
       # Casted 50 full votes
       score *= 1.5 if weighted_receiver_count > 500000 && vesting_shares > 1000000
-      score *= 1.5 if vesting_shares > 10000000
-      score *= 1.5 if vesting_shares > 20000000
+      score *= 1.3 if vesting_shares > 10000000
+      score *= 1.3 if vesting_shares > 20000000
     end
 
     self.cached_diversity_score = score

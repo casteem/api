@@ -52,6 +52,12 @@ class Post < ApplicationRecord
       next if v['percent'] <= 0
 
       score = user.hunt_score_by(v['percent'] / 100.0)
+
+      # normal weight between influencers
+      if User::INFLUENCER_ACCOUNTS.include?(v['voter']) && User::INFLUENCER_ACCOUNTS.include?(self.author)
+        score /= User::INFLUENCER_WEIGHT_BOOST
+      end
+
       self.hunt_score += score
       self.valid_votes << { 'voter' => v['voter'], 'percent' => v['percent'], 'score' => score }
       # puts "+ #{user.hunt_score_by(v['percent'] / 100.0)} by #{v['voter']}"

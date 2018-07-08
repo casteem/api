@@ -29,15 +29,17 @@ task :voting_bot => :environment do |t, args|
   TEST_MODE = false # Should be false on production
   TOTAL_VP_TO_USE = 1000.0
   POWER_TOTAL_POST = if TEST_MODE || current_voting_power > 99.99
-    TOTAL_VP_TO_USE * 0.8
+    TOTAL_VP_TO_USE * 0.78
   else
     # NOTE:
     # If current VP is 70%, we need to only use 10% VP (= 540 VP)
     # This script should not run if POWER_TOTAL_POST < 0
-    (TOTAL_VP_TO_USE - (TOTAL_VP_TO_USE * (100 - current_voting_power) / 20)) * 0.8
+    (TOTAL_VP_TO_USE - (TOTAL_VP_TO_USE * (100 - current_voting_power) / 20)) * 0.78
   end
   POWER_TOTAL_COMMENT = POWER_TOTAL_POST * 0.125 # 10% of total VP
   POWER_PER_MOD_COMMENT = 0.60 # 120% on 200 posts, 240% on 400 posts
+  POWER_PER_INF_COMMENT = 0.50 # 25% max on 5 influencers 100% max on 20 influencers
+  MAX_VOTING_PER_INFLUENCER = 10
   POWER_MAX = 100.0
   MAX_POST_VOTING_COUNT = 1000
 
@@ -199,6 +201,8 @@ task :voting_bot => :environment do |t, args|
   review_comments = []
   total_review_comment_count = 0
   moderators_comments =  []
+  influencers_comments = []
+  inf_comments_count = {}
   posts_to_skip = [] # posts that should skip votings, but need to be counted for VP
   posts_to_remove = [] # posts  that should be removed from the ranking entirely (not counted for VP)
   posts.each_with_index do |post, i|
@@ -238,7 +242,7 @@ task :voting_bot => :environment do |t, args|
       end
     else
       posts_to_remove << post.id
-      logger.log "--> HIDDEN: still checks comments for moderators and review comments"
+      logger.log "--> HIDDEN: still checks comments for mod/inf and review comments"
     end
 
     comments = with_retry(3) do
@@ -249,14 +253,16 @@ task :voting_bot => :environment do |t, args|
     # duplication checks for each posts
     review_commnet_added = {}
     mod_comment_added = {}
+    inf_comment_added = {}
     comments.each do |comment|
       json_metadata = JSON.parse(comment['json_metadata']) rescue {}
       json_metadata = {} unless json_metadata.is_a?(Hash) # Handle invalid json_metadata format
 
       is_review = comment['body'] =~ /pros\s*:/i && comment['body'] =~ /cons\s*:/i
       is_moderator = !(json_metadata['verified_by'].blank?)
+      is_influencer = User::INFLUENCER_ACCOUNTS.include?(comment['author'])
 
-      if is_review || is_moderator
+      if is_review || is_moderator || is_influencer
         should_skip = comment_already_voted?(comment, api)
 
         # 1. Moderator comments
@@ -267,12 +273,25 @@ task :voting_bot => :environment do |t, args|
             else
               moderators_comments.push({ author: comment['author'], permlink: comment['permlink'], should_skip: should_skip })
               mod_comment_added[comment['author']] = true
-              logger.log "--> #{should_skip ? 'SKIP ALREADY_VOTED' : 'ADDED'} Mod comment: @#{comment['author']}"
+              logger.log "--> #{should_skip ? 'SKIP ALREADY_VOTED' : 'ADDED'} Moderation comment: @#{comment['author']}"
             end
           else
             logger.log "--> WTF!!!!! Mod comment: @#{comment['author']}/#{comment['permlink']}"
           end
-        # 2. Review comments
+        # 2. Influencer comments
+        elsif is_influencer
+          if inf_comment_added[comment['author']]
+            logger.log "--> REMOVE DUPLICATED_INF_COMMENT: @#{comment['author']}"
+          elsif inf_comments_count[comment['author']].nil? || inf_comments_count[comment['author']] < MAX_VOTING_PER_INFLUENCER
+            influencers_comments.push({ author: comment['author'], permlink: comment['permlink'], should_skip: should_skip })
+            inf_comment_added[comment['author']] = true # for dup check
+            inf_comments_count[comment['author']] ||= 0
+            inf_comments_count[comment['author']] += 1 # for max votings
+            logger.log "--> #{should_skip ? 'SKIP ALREADY_VOTED' : 'ADDED'} Influencer comment: @#{comment['author']}"
+          else
+            logger.log "--> MAX INF_VOTING_LIMIT REACHED: @#{comment['author']}"
+          end
+        # 3. Review comments
         elsif is_review
           total_review_comment_count += 1
           review_user = User.find_by(username: comment['author'])
@@ -349,15 +368,28 @@ task :voting_bot => :environment do |t, args|
   moderators_comments_size = moderators_comments.size
   logger.log "\n==========\nVOTING ON #{moderators_comments_size} MODERATOR COMMENTS with #{moderators_comments_size *  POWER_PER_MOD_COMMENT}% VP in total\n==========", true
 
-  voting_power = POWER_PER_MOD_COMMENT
   moderators_comments.each_with_index do |comment, i|
-    logger.log "[#{i + 1} / #{moderators_comments_size}] Voting on moderator comment (#{voting_power}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    logger.log "[#{i + 1} / #{moderators_comments_size}] Voting on moderator comment (#{POWER_PER_MOD_COMMENT}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
       logger.log "--> SKIPPED_MODERATOR", true
     else
       sleep(3) unless TEST_MODE
-      res = do_vote(comment[:author], comment[:permlink], voting_power, logger)
+      res = do_vote(comment[:author], comment[:permlink], POWER_PER_MOD_COMMENT, logger)
       # logger.log "--> VOTED_MODERATOR: #{res.inspect}", true
+    end
+  end
+
+  influencers_comments_size = influencers_comments.size
+  logger.log "\n==========\nVOTING ON #{influencers_comments_size} INFLUENCER COMMENTS with #{influencers_comments_size *  POWER_PER_INF_COMMENT}% VP in total\n==========", true
+
+  influencers_comments.each_with_index do |comment, i|
+    logger.log "[#{i + 1} / #{influencers_comments_size}] Voting on influencer comment (#{POWER_PER_INF_COMMENT}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    if comment[:should_skip]
+      logger.log "--> SKIPPED_INFLUENCER", true
+    else
+      sleep(3) unless TEST_MODE
+      res = do_vote(comment[:author], comment[:permlink], POWER_PER_INF_COMMENT, logger)
+      # logger.log "--> VOTED_INFLUENCER: #{res.inspect}", true
     end
   end
 

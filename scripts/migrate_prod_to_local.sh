@@ -1,5 +1,6 @@
 #!/bin/bash
 pkill -f steemhunt
+pkill -f node-sass-chokidar
 
 PG_BIN_DIR=/usr/lib/postgresql/9.5/bin
 PG_DBNAME=steemhunt

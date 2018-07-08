@@ -52,6 +52,11 @@ task :reward_voters => :environment do |t, args|
       else
         rshares_by_users[vote['voter']] = vote['rshares'].to_i
       end
+
+      if User::INFLUENCER_ACCOUNTS.include?(vote['voter'])
+        rshares_by_users[vote['voter']] += vote['rshares'].to_i * 4 # Give influencer x5 in total
+        logger.log "----> INFLUENCER X5: #{vote['voter']}"
+      end
     end
   end
 
