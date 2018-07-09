@@ -192,8 +192,10 @@ class User < ApplicationRecord
 
     # Not enough votings for DS calculation
     if voting_count < 10
-      score *= 0.5
+      score *= 0.4
     elsif voting_count < 30
+      score *= 0.6
+    elsif voting_count < 50
       score *= 0.8
     end
 

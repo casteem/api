@@ -77,6 +77,7 @@ namespace :assets do
     on roles :web do
       stage = fetch(:rails_env) || fetch(:stage)
       upload! "public", "#{release_path}", recursive: true
+      execute :rm, "#{release_path}/public/.DS_Store"
     end
   end
 end
