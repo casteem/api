@@ -40,6 +40,7 @@ task :voting_bot => :environment do |t, args|
   POWER_PER_MOD_COMMENT = 0.60 # 120% on 200 posts, 240% on 400 posts
   POWER_PER_INF_COMMENT = 0.50 # 25% max on 5 influencers 100% max on 20 influencers
   MAX_VOTING_PER_INFLUENCER = 10
+  MAX_REVIEW_COMMENT_VOTINGS = 5
   POWER_MAX = 100.0
   MAX_POST_VOTING_COUNT = 1000
 
@@ -199,6 +200,7 @@ task :voting_bot => :environment do |t, args|
   logger.log "Total #{posts.size} posts found on #{formatted_date(yesterday)}\n==========", true
 
   review_comments = []
+  review_comments_count = {}
   total_review_comment_count = 0
   moderators_comments =  []
   influencers_comments = []
@@ -251,7 +253,7 @@ task :voting_bot => :environment do |t, args|
     # logger.log "----> #{comments.size} comments returned"
 
     # duplication checks for each posts
-    review_commnet_added = {}
+    review_comment_added = {}
     mod_comment_added = {}
     inf_comment_added = {}
     comments.each do |comment|
@@ -296,7 +298,7 @@ task :voting_bot => :environment do |t, args|
           total_review_comment_count += 1
           review_user = User.find_by(username: comment['author'])
 
-          if review_commnet_added[comment['author']]
+          if review_comment_added[comment['author']]
             logger.log "--> REMOVE DUPLICATED_REVIEW_COMMENT: @#{comment['author']}"
           elsif comment['body'].size < 80
             logger.log "--> REMOVE TOO_SHORT_REVIEW_COMMENT: @#{comment['author']}"
@@ -312,10 +314,14 @@ task :voting_bot => :environment do |t, args|
             logger.log "--> REMOVE LOW_REPUTATION: @#{comment['author']}"
           elsif review_user.try(:blacklist?)
             logger.log "--> REMOVE_BLACKLIST: @#{comment['author']}"
-          else
+          elsif review_comments_count[comment['author']].nil? || review_comments_count[comment['author']] < MAX_REVIEW_COMMENT_VOTINGS
             review_comments.push({ author: comment['author'], permlink: comment['permlink'], should_skip: should_skip })
-            review_commnet_added[comment['author']] = true
+            review_comment_added[comment['author']] = true # for dup check
+            review_comments_count[comment['author']] ||= 0
+            review_comments_count[comment['author']] += 1 # for max votings
             logger.log "--> #{should_skip ? 'SKIP ALREADY_VOTED' : 'ADDED'} Review comment: @#{comment['author']}"
+          else
+            logger.log "--> MAX_REVIEW_COMMENT_VOTINGS REACHED: @#{comment['author']}"
           end
         end
       end
