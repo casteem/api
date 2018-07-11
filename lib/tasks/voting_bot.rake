@@ -40,7 +40,7 @@ task :voting_bot => :environment do |t, args|
   POWER_PER_MOD_COMMENT = 0.60 # 120% on 200 posts, 240% on 400 posts
   POWER_PER_INF_COMMENT = 0.50 # 25% max on 5 influencers 100% max on 20 influencers
   MAX_VOTING_PER_INFLUENCER = 10
-  MAX_REVIEW_COMMENT_VOTINGS = 5
+  MAX_REVIEW_COMMENT_VOTINGS = 7
   POWER_MAX = 100.0
   MAX_POST_VOTING_COUNT = 1000
 
@@ -354,7 +354,7 @@ task :voting_bot => :environment do |t, args|
     end
   end
 
-  logger.log "\n==========\nVOTING ON #{review_comments.size} REVIEW COMMENTS with #{POWER_TOTAL_COMMENT.round(2)}% VP"
+  logger.log "\n==========\nVOTING ON #{review_comments.size} REVIEW COMMENTS (#{review_comments_count.size} authors) with #{POWER_TOTAL_COMMENT.round(2)}% VP"
   review_comments = review_comments.sample(100)
   logger.log "Pick 100 review comments randomly\n==========", true
 
@@ -386,7 +386,7 @@ task :voting_bot => :environment do |t, args|
   end
 
   influencers_comments_size = influencers_comments.size
-  logger.log "\n==========\nVOTING ON #{influencers_comments_size} INFLUENCER COMMENTS with #{influencers_comments_size *  POWER_PER_INF_COMMENT}% VP in total\n==========", true
+  logger.log "\n==========\nVOTING ON #{influencers_comments_size} INFLUENCER COMMENTS (#{inf_comments_count.size} influencers) with #{influencers_comments_size *  POWER_PER_INF_COMMENT}% VP in total\n==========", true
 
   influencers_comments.each_with_index do |comment, i|
     logger.log "[#{i + 1} / #{influencers_comments_size}] Voting on influencer comment (#{POWER_PER_INF_COMMENT}%): @#{comment[:author]}/#{comment[:permlink]}", true
