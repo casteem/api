@@ -15,6 +15,7 @@ class UsersController < ApplicationController
 
     @user.session_count += 1
     @user.last_logged_in_at = Time.now
+    @user.last_ip = request.remote_ip
 
     if @user.save
       render json: @user.as_json(only: [:username, :created_at, :blacklisted_at], methods: [:voting_weight, :diversity_score]), status: :ok
