@@ -13,7 +13,8 @@ class User < ApplicationRecord
     'geekgirl', 'playitforward'
   ]
   INFLUENCER_ACCOUNTS = [
-    'dontstopmenow', 'sambillingham', 'ogochukwu', 'theversatileguy', 'guyfawkes4-20', 'pialejoana', 'tobias-g', 'superoo7'
+    'dontstopmenow', 'sambillingham', 'ogochukwu', 'theversatileguy', 'guyfawkes4-20', 'pialejoana', 'tobias-g', 'superoo7',
+    'themanualbot', 'rtytf', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz'
   ]
   INFLUENCER_WEIGHT_BOOST = 5
   GUARDIAN_ACCOUNTS = [
