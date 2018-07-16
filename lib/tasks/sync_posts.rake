@@ -10,7 +10,7 @@ task :sync_posts, [:days] => :environment do |t, args|
   day_start = (today - (days).day).to_time
   day_end = (today - (days + 1).day).to_time
 
-  posts = Post.where('created_at >= ? AND created_at < ?', day_end, day_start).
+  posts = Post.where('listed_at >= ? AND listed_at < ?', day_end, day_start).
                where(is_active: true)
 
   logger.log "\n== UPDATES #{posts.count} POSTS ON DAY #{days} ==", true

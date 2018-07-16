@@ -11,9 +11,9 @@ class PostsController < ApplicationController
     today = Time.zone.today.to_time
 
     @posts = if days_ago > 0
-      Post.where('created_at >= ? AND created_at < ?', today - days_ago.days, today - (days_ago - 1).days)
+      Post.where('listed_at >= ? AND listed_at < ?', today - days_ago.days, today - (days_ago - 1).days)
     else
-      Post.where('created_at >= ?', today)
+      Post.where('listed_at >= ?', today)
     end
 
     if params[:sort] == 'unverified'
@@ -30,9 +30,9 @@ class PostsController < ApplicationController
 
     @posts = case params[:period]
       when 'week'
-        Post.where('created_at >= ?', now.beginning_of_week)
+        Post.where('listed_at >= ?', now.beginning_of_week)
       when 'month'
-        Post.where('created_at >= ?', now.beginning_of_month)
+        Post.where('listed_at >= ?', now.beginning_of_month)
       else
         Post.all
       end.where(is_active: true).order(@sort)
@@ -102,17 +102,18 @@ class PostsController < ApplicationController
 
     today = Time.zone.today.to_time
     if @post
-      if @post.active? || @post.created_at < today
+      if @post.active?
         render json: { error: 'You have already posted the same product on Steemhunt.' }, status: :unprocessable_entity and return
       else
         @post.assign_attributes(post_params)
         @post.is_active = true
         @post.is_verified = false
         @post.created_at = Time.now
+        @post.listed_at = Time.now
       end
     else
       today_count = Post.where(author: post_params[:author]).where(is_active: true).
-                         where('created_at >= ?', today).count
+                         where('listed_at >= ?', today).count
       if today_count >= 2
         render json: { error: 'You have already posted 2 products today. Please hunt more tomorrow :)' }, status: :unprocessable_entity and return
       end
@@ -177,7 +178,7 @@ class PostsController < ApplicationController
       mod_params = post_moderate_params.merge(verified_by: @current_user.username)
 
       # roll-over to Today's ranking when post is re-verified from hidden status
-      mod_params[:created_at] = Time.zone.today.to_time if !@post.is_active && mod_params[:is_active]
+      mod_params[:listed_at] = Time.now if !@post.is_active && mod_params[:is_active]
 
       if @post.update!(mod_params)
         render_moderator_fields
@@ -211,7 +212,7 @@ class PostsController < ApplicationController
     def set_sort_option
       @sort = case params[:sort]
         when 'created'
-          { created_at: :desc }
+          { listed_at: :desc }
         when 'vote_count'
           'json_array_length(valid_votes) DESC'
         when 'comment_count'

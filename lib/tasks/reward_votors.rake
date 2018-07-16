@@ -14,7 +14,7 @@ task :reward_voters => :environment do |t, args|
 
   logger.log "\n==========\n#{HUNT_DISTRIBUTION_VOTE} HUNT DISTRIBUTION ON VOTERS \n=========", true
 
-  posts = Post.where('created_at >= ? AND created_at < ?', yesterday, today).
+  posts = Post.where('listed_at >= ? AND listed_at < ?', yesterday, today).
                where(is_verified: true).order('hunt_score DESC')
   logger.log "Total #{posts.count} verified posts founds\n=="
 

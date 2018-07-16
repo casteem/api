@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_07_13_041915) do
+ActiveRecord::Schema.define(version: 2018_07_16_141107) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -49,10 +49,12 @@ ActiveRecord::Schema.define(version: 2018_07_13_041915) do
     t.string "verified_by"
     t.float "hunt_score", default: 0.0
     t.json "valid_votes", default: []
+    t.datetime "listed_at"
     t.index "((((to_tsvector('english'::regconfig, (author)::text) || to_tsvector('english'::regconfig, (title)::text)) || to_tsvector('english'::regconfig, (tagline)::text)) || to_tsvector('english'::regconfig, immutable_array_to_string(tags, ' '::text))))", name: "index_posts_full_text", using: :gin
     t.index ["author", "permlink"], name: "index_posts_on_author_and_permlink", unique: true
     t.index ["created_at"], name: "index_posts_on_created_at"
     t.index ["is_active"], name: "index_posts_on_is_active"
+    t.index ["listed_at"], name: "index_posts_on_listed_at"
     t.index ["url"], name: "index_posts_on_url", unique: true
   end
 

@@ -10,12 +10,18 @@ class Post < ApplicationRecord
 
   # TODO_ABV: Uncomment for efficiency
   before_update :calculate_hunt_score, if: :active_votes_changed?
-  scope :today, -> { where('created_at >= ?', Time.zone.today.to_time) }
+  before_create :set_listed_at
+  scope :today, -> { where('listed_at >= ?', Time.zone.today.to_time) }
   scope :active, -> { where(is_active: true) }
 
   scope :for_a_month, -> {
-    where('created_at > ?', 30.days.ago)
+    where('listed_at > ?', 30.days.ago)
   }
+
+  # automatically listed on creation
+  def set_listed_at
+    self.listed_at = self.created_at
+  end
 
   # NOTE: JSON structure
   # - active_votes: { "voter": "tabris", "weight": 645197, "rshares": "401660828088", "percent": 10000, "reputation": "7112685098931", "time": "2018-02-16T20:14:48" }
@@ -33,8 +39,8 @@ class Post < ApplicationRecord
   def calculate_hunt_score
     return if self.active_votes.blank?
 
-    # freeze hunt_score after payout ends (when our sync task for day 8 finishes)
-    return if self.created_at < Time.zone.today.to_time
+    # freeze hunt_score after daily ranking finished
+    return if self.listed_at < Time.zone.today.to_time
 
     voters = self.active_votes.map { |v| v['voter'] }
     valid_voters = {}

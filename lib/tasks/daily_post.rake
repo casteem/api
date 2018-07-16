@@ -12,7 +12,7 @@ task :daily_post => :environment do |t, args|
   logger = SLogger.new
   logger.log "Start posting - #{title}"
 
-  posts = Post.where('created_at >= ? AND created_at < ?', yesterday, today).
+  posts = Post.where('listed_at >= ? AND listed_at < ?', yesterday, today).
               where(is_active: true).
               order('hunt_score DESC')
   total_count = posts.count

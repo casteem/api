@@ -6,7 +6,7 @@ task :mod_stats => :environment do |t, args|
   today = Time.zone.today.to_time
   yesterday = (today - 1.day).to_time
 
-  posts = Post.where('created_at >= ? AND created_at < ?', yesterday, today)
+  posts = Post.where('listed_at >= ? AND listed_at < ?', yesterday, today)
   total_count = posts.count
   verified_count = posts.where(is_verified: true).count
   active_count = posts.active.where(is_verified: true).count
