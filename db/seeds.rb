@@ -37,5 +37,5 @@ Post.create!(
     weight: 1125,
     voter: 'st3llar'
   }],
-  children: 0,
+  children: 0
 )
