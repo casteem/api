@@ -173,10 +173,17 @@ class PostsController < ApplicationController
   def moderate
     if @post.verified_by != @current_user.username && !@current_user.admin? && !@current_user.guardian?
       render json: { error: "This product is in review by #{@post.verified_by}" }, status: :forbidden
-    elsif @post.update!(post_moderate_params.merge(verified_by: @current_user.username))
-      render_moderator_fields
     else
-      render json: { error: 'UNPROCESSABLE_ENTITY' }, status: :unprocessable_entity
+      mod_params = post_moderate_params.merge(verified_by: @current_user.username)
+
+      # roll-over to Today's ranking when post is re-verified from hidden status
+      mod_params[:created_at] = Time.zone.today.to_time if !@post.is_active && mod_params[:is_active]
+
+      if @post.update!(mod_params)
+        render_moderator_fields
+      else
+        render json: { error: 'UNPROCESSABLE_ENTITY' }, status: :unprocessable_entity
+      end
     end
   end
 

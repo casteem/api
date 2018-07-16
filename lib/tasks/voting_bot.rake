@@ -212,7 +212,7 @@ task :voting_bot => :environment do |t, args|
 
     unless post.is_verified
       posts_to_remove << post.id
-      post.update! created_at: Time.now # pass it over to the next date
+      post.update! created_at: today # pass it over to the next date
       logger.log "--> REMOVE: Not yet verified"
       next
     end
