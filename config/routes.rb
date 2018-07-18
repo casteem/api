@@ -14,6 +14,8 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/category/:category', to: 'posts#category', constraints: { category: /([^\/]+?)(?=\.json|$|\/)/ }
+
   resources :users, only: [:create]
 
   resources :hunt_transactions, only: [:index]

@@ -3,7 +3,7 @@ class PostsController < ApplicationController
   before_action :set_post, only: [:show, :update, :refresh, :moderate, :set_moderator, :destroy]
   before_action :check_ownership!, only: [:update, :destroy]
   before_action :check_moderator!, only: [:moderate, :set_moderator]
-  before_action :set_sort_option, only: [:index, :author, :top]
+  before_action :set_sort_option, only: [:index, :author, :top, :category]
 
   # GET /posts
   def index
@@ -67,6 +67,13 @@ class PostsController < ApplicationController
   # GET /posts/@:author
   def author
     @posts = Post.where(author: params[:author]).order(@sort)
+
+    render_pages
+  end
+
+  # GET /category/:category
+  def category
+    @posts = Post.where(":category = ANY(tags)", category: params[:category]).order(@sort)
 
     render_pages
   end
