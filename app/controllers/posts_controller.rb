@@ -71,9 +71,9 @@ class PostsController < ApplicationController
     render_pages
   end
 
-  # GET /category/:category
-  def category
-    @posts = Post.where(":category = ANY(tags)", category: params[:category]).order(@sort)
+  # GET /tag/:tag
+  def tag
+    @posts = Post.where(":tag = ANY(tags)", tag: params[:tag]).order(@sort)
 
     render_pages
   end

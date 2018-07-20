@@ -11,10 +11,10 @@ Rails.application.routes.draw do
       get '/@:author/:permlink', to: 'posts#show', constraints: { author: /[^\/]+/ }
       put '/@:author/:permlink', to: 'posts#update', constraints: { author: /[^\/]+/ }
       delete '/@:author/:permlink', to: 'posts#destroy', constraints: { author: /[^\/]+/ }
+      get '/tag/:tag', to: 'posts#tag'      
     end
   end
 
-  get '/category/:category', to: 'posts#category', constraints: { category: /([^\/]+?)(?=\.json|$|\/)/ }
 
   resources :users, only: [:create]
 
