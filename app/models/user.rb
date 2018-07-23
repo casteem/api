@@ -14,7 +14,7 @@ class User < ApplicationRecord
   ]
   INFLUENCER_ACCOUNTS = [
     'dontstopmenow', 'sambillingham', 'ogochukwu', 'theversatileguy', 'guyfawkes4-20', 'pialejoana', 'tobias-g', 'superoo7',
-    'themanualbot', 'rtytf', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz'
+    'themanualbot', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz', 'chuuuckie', 'shaphir', 'mobi72'
   ]
   INFLUENCER_WEIGHT_BOOST = 5
   GUARDIAN_ACCOUNTS = [
