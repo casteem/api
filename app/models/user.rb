@@ -137,7 +137,7 @@ class User < ApplicationRecord
   def user_score(force = false, debug = false)
     return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 24.hours.ago && !force
 
-    score = credibility_score(debug) *  curation_score(debug) * hunt_score(debug) * boost_score(debug)
+    score = credibility_score(debug) *  curation_score(debug) * hunter_score(debug) * boost_score(debug)
 
     self.cached_user_score = score
     self.user_score_updated_at = Time.now
@@ -164,8 +164,10 @@ class User < ApplicationRecord
     end
     puts "Reputation: #{score}" if debug
 
-    if created_at > 1.month.ago
+    if created_at > 1.week.ago
       score *= 0.5
+    elsif created_at > 1.month.ago
+      score *= 0.8
     end
     puts "Age check: #{score} - #{(Time.now - created_at).round / 86400} days" if debug
 
@@ -257,9 +259,11 @@ class User < ApplicationRecord
 
     # Not enough votings for DS calculation
     if voting_count < 10
-      score *= 0.4
-    elsif voting_count < 30
+      score *= 0.5
+    elsif voting_count < 20
       score *= 0.6
+    elsif voting_count < 30
+      score *= 0.7
     elsif voting_count < 50
       score *= 0.8
     end
@@ -289,21 +293,27 @@ class User < ApplicationRecord
     score
   end
 
-  # 3. Hunt Score
-  def hunt_score(debug = false)
+  # 3. Hunter Score
+  def hunter_score(debug = false)
     all_average = Post.for_a_month.active.average(:hunt_score) || 0.0
     my_average = Post.where(author: username).for_a_month.active.average(:hunt_score) || 0.0
-    my_count = Post.where(author: username).for_a_month.active.count
+    my_count = Post.where(author: username).for_a_month.group(:is_active).count
+    all_count = my_count.values.sum
 
-    return 1.0 if moderator? # Do not cacluate hunt_score for mods & team
-    return 0.5 if my_average == 0 # No hunt for a month
-
-    score = if my_count < 3
-      1.0
-    else
-      my_average / all_average
+    if moderator? # Neutral if mods & team OR not enough data
+      puts "Hunt Score: 1.0 - Mod" if debug
+      return 1.0
     end
+    if my_count[true] < 3
+      puts "Hunt Score: 0.5 - Not enough data" if debug
+      return 0.5
+    end
+
+    score = my_average / (all_average / 2) # Disadvantage if my average HS is lower than the half of all posts' 1 month average
+    score = 1.5 if score > 1.5 # Max 1.5 (TODO: Higher max limit if our ranking board represnet the hunt quality better)
     puts "Hunt Score: #{score}" if debug
+
+    score *= my_count[true] / all_count # Disadvantage with review pass rate
 
     score
   end
