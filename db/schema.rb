@@ -74,6 +74,7 @@ ActiveRecord::Schema.define(version: 2018_07_21_074657) do
     t.float "vesting_shares", default: -1.0
     t.integer "circle_vote_count", default: 0
     t.string "last_ip"
+    t.float "activity_score", default: 1.0
     t.index ["encrypted_token", "reputation"], name: "index_users_on_encrypted_token_and_reputation"
     t.index ["last_logged_in_at"], name: "index_users_on_last_logged_in_at"
     t.index ["username"], name: "index_users_on_username", unique: true

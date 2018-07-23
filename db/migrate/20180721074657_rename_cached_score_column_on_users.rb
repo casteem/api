@@ -2,6 +2,7 @@ class RenameCachedScoreColumnOnUsers < ActiveRecord::Migration[5.2]
   def change
     rename_column :users, :cached_diversity_score, :cached_user_score
     rename_column :users, :diversity_score_updated_at, :user_score_updated_at
+    add_column :users, :activity_score, :float, default: 1.0
 
     Post.for_a_month.each do |post|
       post.valid_votes.each do |v|

@@ -123,6 +123,26 @@ class User < ApplicationRecord
     end
   end
 
+  def log_session(ip_addr)
+    # Updata activity_score for login
+    today = Time.zone.today.to_time
+    yesterday = Time.zone.yesterday.to_time
+    if self.last_logged_in_at < today
+      self.activity_score += 0.1
+
+      if self.last_logged_in_at < yesterday
+        self.activity_score -= 0.1 * ((yesterday - self.last_logged_in_at) / 86400).ceil
+      end
+    end
+
+    # Min / Max : 0.8 - 1.5
+    self.activity_score = 0.8 if self.activity_score < 0.8
+    self.activity_score = 1.5 if self.activity_score > 1.5
+
+    self.session_count += 1
+    self.last_logged_in_at = Time.now
+    self.last_ip = ip_addr
+  end
 
   # MARK: - User Score & Voting Weight
 
@@ -134,10 +154,26 @@ class User < ApplicationRecord
     voting_weight * weight * 0.01
   end
 
+  def level
+    if user_score >= 8.0
+      5
+    elsif user_score >= 5.0
+      4
+    elsif user_score >= 3.0
+      3
+    elsif user_score >= 2.0
+      2
+    elsif user_score >= 1.0
+      1
+    else
+      0
+    end
+  end
+
   def user_score(force = false, debug = false)
     return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 24.hours.ago && !force
 
-    score = credibility_score(debug) *  curation_score(debug) * hunter_score(debug) * boost_score(debug)
+    score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug) * boost_score(debug)
 
     self.cached_user_score = score
     self.user_score_updated_at = Time.now
@@ -165,7 +201,7 @@ class User < ApplicationRecord
     puts "Reputation: #{score}" if debug
 
     if created_at > 1.week.ago
-      score *= 0.5
+      score *= 0.6
     elsif created_at > 1.month.ago
       score *= 0.8
     end
@@ -259,13 +295,13 @@ class User < ApplicationRecord
 
     # Not enough votings for DS calculation
     if voting_count < 10
-      score *= 0.5
-    elsif voting_count < 20
       score *= 0.6
-    elsif voting_count < 30
+    elsif voting_count < 20
       score *= 0.7
-    elsif voting_count < 50
+    elsif voting_count < 30
       score *= 0.8
+    elsif voting_count < 50
+      score *= 0.9
     end
     puts "DS not enough data: #{score}" if debug
 
@@ -304,9 +340,9 @@ class User < ApplicationRecord
       puts "Hunt Score: 1.0 - Mod" if debug
       return 1.0
     end
-    if my_count[true] < 3
-      puts "Hunt Score: 0.5 - Not enough data" if debug
-      return 0.5
+    if my_count[true].nil? || my_count[true] < 3
+      puts "Hunt Score: 0.8 - Not enough data" if debug
+      return 0.8
     end
 
     score = my_average / (all_average / 2) # Disadvantage if my average HS is lower than the half of all posts' 1 month average
