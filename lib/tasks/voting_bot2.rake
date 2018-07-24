@@ -134,7 +134,7 @@ task :voting_bot2 => :environment do |t, args|
   end
 
   api = Radiator::Api.new
-  today = Time.zone.today.to_time + 1.day
+  today = Time.zone.today.to_time
   yesterday = (today - 1.day).to_time
 
   logger.log "\n==========\nVOTING STARTS with #{(POWER_TOTAL_POST).round(2)}% TOTAL VP - #{formatted_date(yesterday)}", true
@@ -182,17 +182,18 @@ task :voting_bot2 => :environment do |t, args|
         next
       end
 
-      if User.find_by(username: post.author).try(:blacklist?)
+      user = User.find_by(username: post.author)
+
+      if user.blacklist?
         posts_to_remove << post.id
         logger.log "--> REMOVE_BLACKLIST: still checks comments for voting"
-      end
-
-      if votes.any? { |v| v['voter'] == 'steemhunt' }
+      elsif user.level == 0
+        posts_to_remove << post.id
+        logger.log "--> REMOVE_LEVEL_0: still checks comments for voting"
+      elsif votes.any? { |v| v['voter'] == 'steemhunt' }
         posts_to_skip << post.id
         logger.log "--> SKIP: Already voted"
-      end
-
-      if post_added[post.author].to_i >= MAX_HUNT_VOTING_COUNT
+      elsif post_added[post.author].to_i >= MAX_HUNT_VOTING_COUNT
         posts_to_remove << post.id
         logger.log "--> REMOVE: More than #{MAX_HUNT_VOTING_COUNT} hunt by @#{post.author}, still checks comments for voting"
       else
@@ -223,6 +224,12 @@ task :voting_bot2 => :environment do |t, args|
       next if comment_author.nil?
 
       comments_to_vote[:sh_count] += 1
+
+      # Filter level 0
+      if comment_author.level == 0
+        logger.log "--> REMOVE LEVEL_0_COMMENTS: #{comment['author']}"
+        next
+      end
 
       # Check already voted
       should_skip = comment_already_voted?(comment, api)
@@ -339,15 +346,11 @@ task :voting_bot2 => :environment do |t, args|
     if posts_to_skip.include?(post.id)
       logger.log "--> SKIPPED_POST (#{ranking}/#{posts.size})"
     else
-      if voting_weight > 0
-        sleep(20) unless TEST_MODE
-        res = do_vote(post.author, post.permlink, voting_weight, logger)
-        # logger.log "--> VOTED_POST: #{res.inspect}"
-        res = do_comment(post.author, post.permlink, ranking, logger)
-        # logger.log "--> COMMENTED: #{res.inspect}", true
-      else
-        logger.log "--> SKIPPED: Level 0"
-      end
+      sleep(20) unless TEST_MODE
+      res = do_vote(post.author, post.permlink, voting_weight, logger)
+      # logger.log "--> VOTED_POST: #{res.inspect}"
+      res = do_comment(post.author, post.permlink, ranking, logger)
+      # logger.log "--> COMMENTED: #{res.inspect}", true
     end
   end
 
@@ -356,17 +359,13 @@ task :voting_bot2 => :environment do |t, args|
   comments_to_vote[:normal].each_with_index do |comment, i|
     voting_weight = voting_weight_for(:comment, comment[:author], weight_per_unit)
 
-    logger.log "[#{i + 1} / #{comments_to_vote[:normal].size}] Voting on review comment (#{voting_weight}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    logger.log "[#{i + 1} / #{comments_to_vote[:normal].size}] Voting on review comment (#{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
       logger.log "--> SKIPPED_REVIEW", true
     else
-      if voting_weight > 0
-        sleep(3) unless TEST_MODE
-        res = do_vote(comment[:author], comment[:permlink], voting_weight, logger)
-        # logger.log "--> VOTED_REVIEW: #{res.inspect}", true
-      else
-        logger.log "--> SKIPPED: Level 0"
-      end
+      sleep(3) unless TEST_MODE
+      res = do_vote(comment[:author], comment[:permlink], voting_weight, logger)
+      # logger.log "--> VOTED_REVIEW: #{res.inspect}", true
     end
   end
 
@@ -383,17 +382,14 @@ task :voting_bot2 => :environment do |t, args|
       voting_weight_for(:comment, comment[:author], weight_per_unit) + POWER_ADDED_PER_MOD_COMMENT
     end
 
-    logger.log "[#{i + 1} / #{comments_to_vote[:moderators].size}] Voting on MOD comment (#{voting_weight}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    logger.log "[#{i + 1} / #{comments_to_vote[:moderators].size}] Voting on MOD comment (#{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
       logger.log "--> SKIPPED_MODERATOR", true
     else
-      if voting_weight > 0
-        sleep(3) unless TEST_MODE
-        res = do_vote(comment[:author], comment[:permlink], voting_weight, logger)
-        # logger.log "--> VOTED_MODERATOR: #{res.inspect}", true
-      else
-        logger.log "--> SKIPPED: Level 0"
-      end
+      sleep(3) unless TEST_MODE
+      res = do_vote(comment[:author], comment[:permlink], voting_weight, logger)
+      mod_voted_count[comment[:author]] += 1
+      # logger.log "--> VOTED_MODERATOR: #{res.inspect}", true
     end
   end
 
@@ -402,17 +398,13 @@ task :voting_bot2 => :environment do |t, args|
   comments_to_vote[:influencers].each_with_index do |comment, i|
     voting_weight = voting_weight_for(:comment, comment[:author], weight_per_unit) + POWER_ADDED_PER_INF_COMMENT
 
-    logger.log "[#{i + 1} / #{comments_to_vote[:influencers].size}] Voting on INF comment (#{voting_weight}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    logger.log "[#{i + 1} / #{comments_to_vote[:influencers].size}] Voting on INF comment (#{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
       logger.log "--> SKIPPED_INFLUENCER", true
     else
-      if voting_weight > 0
-        sleep(3) unless TEST_MODE
-        res = do_vote(comment[:author], comment[:permlink], voting_weight, logger)
-        # logger.log "--> VOTED_INFLUENCER: #{res.inspect}", true
-      else
-        logger.log "--> SKIPPED: Level 0"
-      end
+      sleep(3) unless TEST_MODE
+      res = do_vote(comment[:author], comment[:permlink], voting_weight, logger)
+      # logger.log "--> VOTED_INFLUENCER: #{res.inspect}", true
     end
   end
 
