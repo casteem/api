@@ -26,7 +26,7 @@ task :voting_bot => :environment do |t, args|
     current_vp > 100 ? 100.0 : current_vp
   end
 
-  TEST_MODE = false # Should be false on production
+  TEST_MODE = true # Should be false on production
   TOTAL_VP_TO_USE = 1000.0
   POWER_TOTAL_POST = if TEST_MODE || current_voting_power > 99.99
     TOTAL_VP_TO_USE * 0.78

@@ -6,7 +6,7 @@ class User < ApplicationRecord
   validate :validate_eth_format
   has_many :hunt_transactions
 
-  ADMIN_ACCOUNTS = ['steemhunt', 'tabris', 'project7']
+  ADMIN_ACCOUNTS = ['steemhunt', 'tabris', 'project7', 'astrocket']
   MODERATOR_ACCOUNTS = [
     'tabris', 'project7',
     'teamhumble', 'folken', 'urbangladiator', 'chronocrypto', 'dayleeo', 'fknmayhem', 'jayplayco', 'bitrocker2020', 'joannewong',
@@ -151,13 +151,13 @@ class User < ApplicationRecord
     return 0 unless dau?
     return 0 if blacklist?
 
-    voting_weight * weight * 0.01
+    user_score * weight * 0.01 * boost_score
   end
 
   def level
-    if user_score >= 8.0
+    if user_score >= 5.0
       5
-    elsif user_score >= 5.0
+    elsif user_score >= 4.0
       4
     elsif user_score >= 3.0
       3
@@ -173,13 +173,13 @@ class User < ApplicationRecord
   def user_score(force = false, debug = false)
     return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 24.hours.ago && !force
 
-    score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug) * boost_score(debug)
+    score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
 
     self.cached_user_score = score
     self.user_score_updated_at = Time.now
     self.save!
 
-    self.cached_user_score
+    score.round(2)
   end
 
   # Voting Weight = User Score
@@ -189,10 +189,16 @@ class User < ApplicationRecord
   def credibility_score(debug = false)
     score = if reputation >= 60
       3.0
+    elsif reputation >= 58
+      2.5
     elsif reputation >= 55
       2.0
+    elsif reputation >= 50
+      1.5
     elsif reputation >= 45
       1.0
+    elsif reputation >= 40
+      0.8
     elsif reputation >= 35
       0.5
     else
@@ -294,9 +300,9 @@ class User < ApplicationRecord
     puts "DS low: #{score}" if debug
 
     # Not enough votings for DS calculation
-    if voting_count < 10
+    if voting_count < 5
       score *= 0.6
-    elsif voting_count < 20
+    elsif voting_count < 10
       score *= 0.7
     elsif voting_count < 30
       score *= 0.8
@@ -349,16 +355,14 @@ class User < ApplicationRecord
     score = 1.5 if score > 1.5 # Max 1.5 (TODO: Higher max limit if our ranking board represnet the hunt quality better)
     puts "Hunt Score: #{score}" if debug
 
-    score *= my_count[true] / all_count # Disadvantage with review pass rate
+    score *= my_count[true] / all_count.to_f # Disadvantage with review pass rate
+    puts "Review disadvantage: #{score}" if debug
 
     score
   end
 
-  # 4. Boost Score
-  def boost_score(debug = false)
-    score = influencer? ? INFLUENCER_WEIGHT_BOOST : 1.0
-    puts "Boost: #{score}" if debug
-
-    score
+  # 4. Boost Score (Not affected on level)
+  def boost_score
+    influencer? ? INFLUENCER_WEIGHT_BOOST : 1.0
   end
 end
