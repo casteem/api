@@ -197,23 +197,9 @@ class User < ApplicationRecord
 
   # 1. Account Credibility
   def credibility_score(debug = false)
-    score = if reputation >= 60
-      3.0
-    elsif reputation >= 58
-      2.5
-    elsif reputation >= 55
-      2.0
-    elsif reputation >= 50
-      1.5
-    elsif reputation >= 45
-      1.0
-    elsif reputation >= 40
-      0.8
-    elsif reputation >= 35
-      0.5
-    else
-      0
-    end
+    score = (reputation - 35) * 0.12
+    score = 3.0 if score > 3.0
+    score = 0.0 if score < 0
     puts "Reputation: #{reputation} - Score: #{score}" if debug
 
     if created_at > 1.week.ago
