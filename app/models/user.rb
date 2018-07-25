@@ -329,8 +329,12 @@ class User < ApplicationRecord
       end
     end
 
-    score = my_average / (all_average / 2) # Disadvantage if my average HS is lower than the half of all posts' 1 month average
-    score = 1.5 if score > 1.5 # Max 1.5 (TODO: Higher max limit if our ranking board represnet the hunt quality better)
+    score = my_average.to_f / all_average
+
+    # Disadvantage if my average HS is lower than the 2/3 of all posts' 1 month average
+    score = my_average / (all_average / 1.5) if score < 1
+    # Max 1.5 (TODO: Higher max limit if our ranking board represnet the hunt quality better)
+    score = 1.5 if score > 1.5
     puts "Hunt Score: #{score}" if debug
 
     score *= my_count[true] / all_count.to_f # Disadvantage with review pass rate
