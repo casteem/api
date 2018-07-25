@@ -260,12 +260,20 @@ class PostsController < ApplicationController
       # Google Playstore apps use parameters for different products
       return "#{uri}%" if host == 'play.google.com' && path == '/store/apps/details'
 
-      "http%://%#{host}#{path}%" # NOTE: Cannot use index scan
+      ["http%://#{host}#{path}%", "http%://www.#{host}#{path}%"] # NOTE: Cannot use index scan
     end
 
     def existing_post(uri)
+      # Index scan first
+      post = Post.where('url LIKE ?', "#{uri}%").where.not(author: @current_user.username).first
+      return post unless post.nil?
+
       if search = search_url(uri)
-        Post.where('url LIKE ?', search).where.not(author: @current_user.username).first
+        if search.is_a?(Array)
+          Post.where('url LIKE ? OR url LIKE ?', search[0], search[1])
+        else
+          Post.where('url LIKE ?', search)
+        end.where.not(author: @current_user.username).first
       else
         'INVALID'
       end
