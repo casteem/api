@@ -297,17 +297,12 @@ class User < ApplicationRecord
       total_weighted += weighted_counts[id]
     end
 
-    score = weighted_receiver_count / total_weighted.to_f
-    puts "DS initial: #{score}" if debug
+    ds = weighted_receiver_count / total_weighted.to_f
+    ds = 1.0 if ds.nan?
 
-    if score.nan?
-      # Default 1.0
-      score = 1.0
-    elsif score < 0.4
-      # Lower the lower
-      score *= 0.5
-    end
-    puts "DS low: #{score}" if debug
+    score = 1.0
+    score *= ds if ds < 0.5 # only penalty if ds < 0.5
+    puts "DS : #{score}" if debug
 
     if voting_count < 40
       # Disadvantage if not enough voting data (min 0.6)
@@ -338,13 +333,14 @@ class User < ApplicationRecord
     my_count = Post.where(author: username).for_a_month.group(:is_active).count
     all_count = my_count.values.sum
 
-    if moderator? # Neutral if mods & team OR not enough data
-      puts "Hunt Score: 1.0 - Mod" if debug
-      return 1.0
-    end
     if my_count[true].nil? || my_count[true] < 3
-      puts "Hunt Score: 0.8 - Not enough data" if debug
-      return 0.8
+      if moderator? # Neutral if mods & team OR not enough data
+        puts "Hunt Score: 1.0 - Mod" if debug
+        return 1.0
+      else
+        puts "Hunt Score: 0.8 - Not enough data" if debug
+        return 0.8
+      end
     end
 
     score = my_average / (all_average / 2) # Disadvantage if my average HS is lower than the half of all posts' 1 month average
