@@ -181,6 +181,11 @@ class User < ApplicationRecord
       return 0.0
     end
 
+    if self.username == 'steemhunt'
+      puts "Steemhunt" if debug
+      return 0.0
+    end
+
     score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
 
     puts "#{credibility_score} * #{activity_score} * #{curation_score} * #{hunter_score}" if debug
@@ -288,7 +293,7 @@ class User < ApplicationRecord
 
     score = 1.0
     score *= ds if ds < 0.5 # only penalty if ds < 0.5
-    puts "DS : #{score}" if debug
+    puts "Curation Score : #{score} (DS: #{ds})" if debug
 
     if voting_count < 40
       # Disadvantage if not enough voting data (min 0.6)
@@ -296,7 +301,7 @@ class User < ApplicationRecord
       puts "DS not enough data: #{score}" if debug
     else
       # Active curator advantage
-      active_score = 1.0 + (total_voted_weight / 10000000.0)
+      active_score = 1.0 + (total_voted_weight / 20000000.0)
       active_score = 4.0 if active_score > 4
 
       score *= active_score

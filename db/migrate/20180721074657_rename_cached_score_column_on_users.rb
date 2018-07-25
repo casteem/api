@@ -15,7 +15,7 @@ class RenameCachedScoreColumnOnUsers < ActiveRecord::Migration[5.2]
 
     # ActiveRecord::Base.logger = nil
 
-    # User.all.order(:id).each do |user|
+    # User.where('cached_user_score > 2.0').order(:id).each do |user|
     #   old_score = user.cached_user_score
     #   user.user_score(true, false)
 
