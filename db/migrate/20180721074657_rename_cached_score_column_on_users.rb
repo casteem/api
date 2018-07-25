@@ -15,11 +15,11 @@ class RenameCachedScoreColumnOnUsers < ActiveRecord::Migration[5.2]
 
     # ActiveRecord::Base.logger = nil
 
-    # User.all.each do |user|
+    # User.all.order(:id).each do |user|
     #   old_score = user.cached_user_score
     #   user.user_score(true, false)
 
-    #   puts "@#{user.username}: #{old_score.round(2)} -> #{user.user_score.round(2)}"
+    #   puts "#{user.id} - @#{user.username}: #{old_score.round(2)} -> #{user.user_score.round(2)}"
     # end.count
   end
 end

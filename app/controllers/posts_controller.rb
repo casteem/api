@@ -75,7 +75,7 @@ class PostsController < ApplicationController
   def tag
     @posts = Post.where(":tag = ANY(tags)", tag: params[:tag]).order(@sort)
 
-    render_pages
+    render_pages(50)
   end
 
   # GET /posts/@:author/:permlink
@@ -194,10 +194,9 @@ class PostsController < ApplicationController
       render json: @post.as_json(only: [:is_active, :is_verified, :verified_by])
     end
 
-    def render_pages
+    def render_pages(per_page = 20)
       page = params[:page].to_i
       page = 1 if page < 1
-      per_page = 20
 
       if page == 1
         render json: {
