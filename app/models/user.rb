@@ -21,7 +21,7 @@ class User < ApplicationRecord
     'jayplayco', 'fknmayhem'
   ]
 
-  LEVEL_TIER = [ 1.0, 2.0, 3.0, 4.0, 5.0 ]
+  LEVEL_TIER = [ 1.0, 2.0, 3.0, 5.0, 8.0 ]
 
   scope :whitelist, -> {
     where('last_logged_in_at >= ?', Time.zone.today.to_time).
@@ -176,6 +176,11 @@ class User < ApplicationRecord
     # TODO: Tune user score updates period
     return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 1.hour.ago && !force
 
+    if blacklist?
+      puts "Blacklist" if debug
+      return 0.0
+    end
+
     score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
 
     puts "#{credibility_score} * #{activity_score} * #{curation_score} * #{hunter_score}" if debug
@@ -304,38 +309,24 @@ class User < ApplicationRecord
     end
     puts "DS low: #{score}" if debug
 
-    # Not enough votings for DS calculation
-    if voting_count < 5
-      score *= 0.6
-    elsif voting_count < 10
-      score *= 0.7
-    elsif voting_count < 30
-      score *= 0.8
-    elsif voting_count < 50
-      score *= 0.9
+    if voting_count < 40
+      # Disadvantage if not enough voting data (min 0.6)
+      score *= (voting_count + 60) / 100.0
+      puts "DS not enough data: #{score}" if debug
+    else
+      # Active curator advantage
+      active_score = 1.0 + (total_voted_weight / 10000000.0)
+      active_score = 4.0 if activity_score > 4
+
+      score *= active_score
+      puts "Active Curation Advantage: #{score}" if debug
     end
-    puts "DS not enough data: #{score}" if debug
 
     # Circle voting penalty
-    if self.circle_vote_count >= 50
-      score *= 0.01
-    elsif self.circle_vote_count >= 40
-      score *= 0.05
-    elsif self.circle_vote_count >= 30
-      score *= 0.1
-    elsif self.circle_vote_count >= 20
-      score *= 0.15
-    elsif self.circle_vote_count >= 10
-      score *= 0.25
-    elsif self.circle_vote_count >= 5
-      score *= 0.5
+    if self.circle_vote_count > 10
+      score *= (10.0 / self.circle_vote_count)
     end
     puts "Circle Voting: #{score} (JS: #{self.circle_vote_count})" if debug
-
-    # Active curator advantage
-    active_score = total_voted_weight / 10000000.0
-    score *= active_score > 5 ? 5 : active_score if active_score > 1
-    puts "Active Curation Advantage: #{score}" if debug
 
     score
   end

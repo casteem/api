@@ -13,6 +13,8 @@ class RenameCachedScoreColumnOnUsers < ActiveRecord::Migration[5.2]
     #   puts "weight updated - #{post.id}"
     # end.count
 
+    # ActiveRecord::Base.logger = nil
+
     # User.all.each do |user|
     #   old_score = user.cached_user_score
     #   user.user_score(true, false)

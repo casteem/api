@@ -118,9 +118,10 @@ task :voting_bot2 => :environment do |t, args|
         0
       end
 
-    unit = 100 if unit > 100
+    weight = unit * weight_per_unit
+    weight = 100 if weight > 100
 
-    (unit * weight_per_unit).round(2)
+    weight.round(2)
   end
 
 
@@ -164,7 +165,7 @@ task :voting_bot2 => :environment do |t, args|
 
     unless post.is_verified
       posts_to_remove << post.id
-      post.update! listed_at: today # pass it over to the next date
+      post.update! listed_at: today unless TEST_MODE # roll over to the next date
       logger.log "--> REMOVE: Not yet verified / SKIP checking comments"
       next
     end
