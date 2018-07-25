@@ -6,7 +6,7 @@ class User < ApplicationRecord
   validate :validate_eth_format
   has_many :hunt_transactions
 
-  ADMIN_ACCOUNTS = ['steemhunt', 'tabris', 'project7']
+  ADMIN_ACCOUNTS = ['steemhunt', 'tabris', 'project7', 'astrocket']
   MODERATOR_ACCOUNTS = [
     'tabris', 'project7',
     'teamhumble', 'folken', 'urbangladiator', 'chronocrypto', 'dayleeo', 'fknmayhem', 'jayplayco', 'bitrocker2020', 'joannewong',
@@ -18,8 +18,10 @@ class User < ApplicationRecord
   ]
   INFLUENCER_WEIGHT_BOOST = 5
   GUARDIAN_ACCOUNTS = [
-    'folken', 'fknmayhem'
+    'jayplayco', 'fknmayhem'
   ]
+
+  LEVEL_TIER = [ 1.0, 2.0, 3.0, 5.0, 8.0 ]
 
   scope :whitelist, -> {
     where('last_logged_in_at >= ?', Time.zone.today.to_time).
@@ -90,32 +92,6 @@ class User < ApplicationRecord
     end
   end
 
-  def voting_weight
-    return 0 if !dau? || reputation < 35 # only whitelist
-    return 0 if blacklist? # no blacklist for 1 month
-
-    weight = if reputation >= 60
-      0.03
-    elsif reputation >= 55
-      0.02
-    elsif reputation >= 45
-      0.01
-    else
-      0.005
-    end
-
-    weight *= diversity_score
-    weight *= INFLUENCER_WEIGHT_BOOST if influencer?
-
-    weight
-  end
-
-  def hunt_score_by(weight)
-    return 0 if weight <= 0 # no down-votings
-
-    voting_weight * weight
-  end
-
   def validate_eth_format
     unless eth_address.blank?
       errors.add(:eth_address, "Wrong format") if eth_address.size != 42 || !eth_address.downcase.start_with?('0x')
@@ -149,98 +125,125 @@ class User < ApplicationRecord
     end
   end
 
-  # MARK: - Diversity Score
+  def log_session(ip_addr)
+    # Updata activity_score for login
+    today = Time.zone.today.to_time
+    yesterday = Time.zone.yesterday.to_time
+    if self.last_logged_in_at < today
+      self.activity_score += 0.1
 
+      if self.last_logged_in_at < yesterday
+        self.activity_score -= 0.1 * ((yesterday - self.last_logged_in_at) / 86400).ceil
+      end
+    end
+
+    # Min / Max : 0.8 - 1.5
+    self.activity_score = 0.8 if self.activity_score < 0.8
+    self.activity_score = 1.5 if self.activity_score > 1.5
+
+    self.session_count += 1
+    self.last_logged_in_at = Time.now
+    self.last_ip = ip_addr
+  end
+
+  # MARK: - User Score & Voting Weight
+
+  def hunt_score_by(weight)
+    return 0 if weight <= 0 # no down-votings
+    return 0 unless dau?
+    return 0 if blacklist?
+
+    user_score * weight * 0.01 * boost_score
+  end
+
+  def level
+    if user_score >= LEVEL_TIER[4]
+      5
+    elsif user_score >= LEVEL_TIER[3]
+      4
+    elsif user_score >= LEVEL_TIER[2]
+      3
+    elsif user_score >= LEVEL_TIER[1]
+      2
+    elsif user_score >= LEVEL_TIER[0]
+      1
+    else
+      0
+    end
+  end
+
+  def user_score(force = false, debug = false)
+    # TODO: Tune user score updates period
+    return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 1.hour.ago && !force
+
+    if blacklist?
+      puts "Blacklist" if debug
+      return 0.0
+    end
+
+    score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
+
+    puts "#{credibility_score} * #{activity_score} * #{curation_score} * #{hunter_score}" if debug
+
+    self.cached_user_score = score
+    self.user_score_updated_at = Time.now
+    self.save!
+
+    score.round(2)
+  end
+
+  # Voting Weight = User Score
+  alias voting_weight user_score
+
+  # 1. Account Credibility
+  def credibility_score(debug = false)
+    score = if reputation >= 60
+      3.0
+    elsif reputation >= 58
+      2.5
+    elsif reputation >= 55
+      2.0
+    elsif reputation >= 50
+      1.5
+    elsif reputation >= 45
+      1.0
+    elsif reputation >= 40
+      0.8
+    elsif reputation >= 35
+      0.5
+    else
+      0
+    end
+    puts "Reputation: #{reputation} - Score: #{score}" if debug
+
+    if created_at > 1.week.ago
+      score *= 0.6
+    elsif created_at > 1.month.ago
+      score *= 0.8
+    end
+    puts "Age check: #{score} - #{(Time.now - created_at).round / 86400} days" if debug
+
+    # TODO: follower count
+    # TODO: Steemit post, comment count
+    # TODO: FB login
+
+    score
+  end
+
+  # 2. Curation Score
   def votee
     Post.from('posts, json_array_elements(posts.valid_votes) v').for_a_month.
       where("v->>'voter' = ?", username).group(:author).count
   end
 
-  def votee_weight
+  def votee_weighted
     Post.from('posts, json_array_elements(posts.valid_votes) v').for_a_month.
       where("v->>'voter' = ?", username).group(:author).sum("(v#>>'{percent}')::integer")
   end
 
-  # weighted version of `voted users count / voting count`
-  # range from 0.0 - 1.0
-  # if a user voted 100 times (with the same weight to all):
-  # - only 1 receiver => 0.01
-  # - 90 receivers => 0.9
-  def diversity_score(force = false)
-    return cached_diversity_score if cached_diversity_score >= 0 && diversity_score_updated_at && diversity_score_updated_at > 24.hours.ago && !force
-
-    counts = votee
-    weights = votee_weight
-
-    voting_count = 0
-    total_weight = 0
-    weighted_receiver_count = 0
-    counts.each do |id, count|
-      voting_count += count
-      weighted_receiver_count += (weights[id] / count.to_f)
-      total_weight += weights[id]
-    end
-
-    score = weighted_receiver_count / total_weight.to_f
-
-    if score.nan?
-      # Default 1.0
-      score = 1.0
-    elsif score < 0.45
-      # Lower the lower
-      score *= 0.5
-    end
-
-    # Not enough votings for DS calculation
-    if voting_count < 10
-      score *= 0.4
-    elsif voting_count < 30
-      score *= 0.6
-    elsif voting_count < 50
-      score *= 0.8
-    end
-
-    # Circle voting penalty
-    if self.circle_vote_count >= 50
-      score *= 0.01
-    elsif self.circle_vote_count >= 40
-      score *= 0.05
-    elsif self.circle_vote_count >= 30
-      score *= 0.1
-    elsif self.circle_vote_count >= 20
-      score *= 0.15
-    elsif self.circle_vote_count >= 10
-      score *= 0.25
-    elsif self.circle_vote_count >= 5
-      score *= 0.5
-    end
-
-    # Active hunter advantage / disadvantage
-    unless moderator?
-      hunt_count = Post.where(author: username).for_a_month.active.count
-
-      if hunt_count < 1
-        score *= 0.5
-      elsif hunt_count < 3
-        score *= 0.8
-      elsif hunt_count >= 10
-        score *= 1.5
-      end
-    end
-
-    # Good curator advantage
-    if score < 0.90 && score > 0.50 && created_at < 2.weeks.ago
-      # Casted 50 full votes
-      score *= 1.5 if weighted_receiver_count > 500000 && vesting_shares > 1000000
-      score *= 1.3 if vesting_shares > 10000000
-      score *= 1.3 if vesting_shares > 20000000
-    end
-
-    self.cached_diversity_score = score
-    self.diversity_score_updated_at = Time.now
-    self.save!
-
-    self.cached_diversity_score
+  def total_voted_weight
+    Post.from('posts, json_array_elements(posts.valid_votes) v').for_a_month.
+      where("v->>'voter' = ?", username).sum("(v#>>'{weight}')::integer")
   end
 
   def detect_circle(chain = false, logger = nil)
@@ -258,9 +261,9 @@ class User < ApplicationRecord
       end
     end
 
-    old_ds = self.diversity_score
+    old_ds = self.user_score
     self.circle_vote_count = jerk_score
-    ds = self.diversity_score(true)
+    ds = self.user_score(true, true)
 
     if (old_ds - ds).abs > 0.0001
       logger.log "@#{username} --> DS: #{old_ds} -> #{ds}"
@@ -268,7 +271,7 @@ class User < ApplicationRecord
       logger.log " - Jerk Score: #{jerk_score}"
       chain = true if chain == :optional
     else
-      logger.log "@#{username} --> No diff (DS: #{ds} / Jerk Count: #{jerk_score}"
+      logger.log "@#{username} --> No diff (DS: #{ds} / Jerk Count: #{jerk_score})"
       chain = false if chain == :optional
     end
 
@@ -279,5 +282,83 @@ class User < ApplicationRecord
         end
       end
     end
+  end
+
+  def curation_score(debug = false)
+    counts = votee
+    weighted_counts = votee_weighted
+
+    voting_count = 0
+    total_weighted = 0
+    weighted_receiver_count = 0
+    counts.each do |id, count|
+      voting_count += count
+      weighted_receiver_count += (weighted_counts[id] / count.to_f)
+      total_weighted += weighted_counts[id]
+    end
+
+    score = weighted_receiver_count / total_weighted.to_f
+    puts "DS initial: #{score}" if debug
+
+    if score.nan?
+      # Default 1.0
+      score = 1.0
+    elsif score < 0.4
+      # Lower the lower
+      score *= 0.5
+    end
+    puts "DS low: #{score}" if debug
+
+    if voting_count < 40
+      # Disadvantage if not enough voting data (min 0.6)
+      score *= (voting_count + 60) / 100.0
+      puts "DS not enough data: #{score}" if debug
+    else
+      # Active curator advantage
+      active_score = 1.0 + (total_voted_weight / 10000000.0)
+      active_score = 4.0 if activity_score > 4
+
+      score *= active_score
+      puts "Active Curation Advantage: #{score}" if debug
+    end
+
+    # Circle voting penalty
+    if self.circle_vote_count > 10
+      score *= (10.0 / self.circle_vote_count)
+    end
+    puts "Circle Voting: #{score} (JS: #{self.circle_vote_count})" if debug
+
+    score
+  end
+
+  # 3. Hunter Score
+  def hunter_score(debug = false)
+    all_average = Post.for_a_month.active.average(:hunt_score) || 0.0
+    my_average = Post.where(author: username).for_a_month.active.average(:hunt_score) || 0.0
+    my_count = Post.where(author: username).for_a_month.group(:is_active).count
+    all_count = my_count.values.sum
+
+    if moderator? # Neutral if mods & team OR not enough data
+      puts "Hunt Score: 1.0 - Mod" if debug
+      return 1.0
+    end
+    if my_count[true].nil? || my_count[true] < 3
+      puts "Hunt Score: 0.8 - Not enough data" if debug
+      return 0.8
+    end
+
+    score = my_average / (all_average / 2) # Disadvantage if my average HS is lower than the half of all posts' 1 month average
+    score = 1.5 if score > 1.5 # Max 1.5 (TODO: Higher max limit if our ranking board represnet the hunt quality better)
+    puts "Hunt Score: #{score}" if debug
+
+    score *= my_count[true] / all_count.to_f # Disadvantage with review pass rate
+    puts "Review disadvantage: #{score}" if debug
+
+    score
+  end
+
+  # 4. Boost Score (Not affected on level)
+  def boost_score
+    influencer? ? INFLUENCER_WEIGHT_BOOST : 1.0
   end
 end

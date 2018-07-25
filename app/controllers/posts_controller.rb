@@ -3,7 +3,7 @@ class PostsController < ApplicationController
   before_action :set_post, only: [:show, :update, :refresh, :moderate, :set_moderator, :destroy]
   before_action :check_ownership!, only: [:update, :destroy]
   before_action :check_moderator!, only: [:moderate, :set_moderator]
-  before_action :set_sort_option, only: [:index, :author, :top, :category]
+  before_action :set_sort_option, only: [:index, :author, :top, :tag]
 
   # GET /posts
   def index
@@ -119,12 +119,6 @@ class PostsController < ApplicationController
         @post.listed_at = Time.now
       end
     else
-      today_count = Post.where(author: post_params[:author]).where(is_active: true).
-                         where('listed_at >= ?', today).count
-      if today_count >= 2
-        render json: { error: 'You have already posted 2 products today. Please hunt more tomorrow :)' }, status: :unprocessable_entity and return
-      end
-
       @post = Post.new(post_params)
     end
 

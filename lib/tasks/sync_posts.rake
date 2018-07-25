@@ -13,8 +13,6 @@ task :sync_posts, [:days] => :environment do |t, args|
   posts = Post.where('listed_at >= ? AND listed_at < ?', day_end, day_start).
                where(is_active: true)
 
-  logger.log "\n== UPDATES #{posts.count} POSTS ON DAY #{days} ==", true
-
   api = Radiator::Api.new
   diff = 0
   posts.each do |post|
@@ -32,5 +30,5 @@ task :sync_posts, [:days] => :environment do |t, args|
     # logger.log "--> Comments: #{old_comments} -> #{post.children}" if post.children != old_comments
   end
 
-  logger.log "Finished with diff: + $#{diff.round(2)} SBD", true
+  logger.log "== UPDATES #{posts.count} POSTS ON DAY #{days}: #{'+' if diff > 0}#{diff.round(2)} SBD", true
 end

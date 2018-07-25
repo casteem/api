@@ -27,15 +27,6 @@ class Post < ApplicationRecord
   # - active_votes: { "voter": "tabris", "weight": 645197, "rshares": "401660828088", "percent": 10000, "reputation": "7112685098931", "time": "2018-02-16T20:14:48" }
   # - valid_votes: { "voter": "tabris", "percent": 10000, "score": 3.0 }
 
-  # NOTE: Update
-  # User.all.update_all diversity_score_updated_at: nil
-  # Post.today.each do |post|
-  #   old = post.hunt_score
-  #   post.calculate_hunt_score
-  #   post.save!
-  #   puts "#{old} -> #{post.hunt_score}"
-  # end
-
   def calculate_hunt_score
     return if self.active_votes.blank?
 
@@ -65,7 +56,7 @@ class Post < ApplicationRecord
       end
 
       self.hunt_score += score
-      self.valid_votes << { 'voter' => v['voter'], 'percent' => v['percent'], 'score' => score }
+      self.valid_votes << { 'voter' => v['voter'], 'percent' => v['percent'], 'weight' => v['weight'], 'score' => score }
       # puts "+ #{user.hunt_score_by(v['percent'] / 100.0)} by #{v['voter']}"
     end
   end
