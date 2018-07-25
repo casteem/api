@@ -135,7 +135,7 @@ task :voting_bot2 => :environment do |t, args|
   end
 
   api = Radiator::Api.new
-  today = Time.zone.today.to_time + 1.day
+  today = Time.zone.today.to_time + 1.day # TEST               
   yesterday = (today - 1.day).to_time
 
   logger.log "\n==========\nVOTING STARTS with #{(POWER_TOTAL_POST).round(2)}% TOTAL VP - #{formatted_date(yesterday)}", true
