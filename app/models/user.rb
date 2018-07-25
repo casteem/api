@@ -311,7 +311,7 @@ class User < ApplicationRecord
     else
       # Active curator advantage
       active_score = 1.0 + (total_voted_weight / 10000000.0)
-      active_score = 4.0 if activity_score > 4
+      active_score = 4.0 if active_score > 4
 
       score *= active_score
       puts "Active Curation Advantage: #{score}" if debug
