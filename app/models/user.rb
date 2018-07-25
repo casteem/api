@@ -129,7 +129,7 @@ class User < ApplicationRecord
     # Updata activity_score for login
     today = Time.zone.today.to_time
     yesterday = Time.zone.yesterday.to_time
-    if self.last_logged_in_at < today
+    if self.last_logged_in_at && self.last_logged_in_at < today
       self.activity_score += 0.1
 
       if self.last_logged_in_at < yesterday
