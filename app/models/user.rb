@@ -18,8 +18,10 @@ class User < ApplicationRecord
   ]
   INFLUENCER_WEIGHT_BOOST = 5
   GUARDIAN_ACCOUNTS = [
-    'folken', 'fknmayhem'
+    'jayplayco', 'fknmayhem'
   ]
+
+  LEVEL_TIER = [ 1.0, 2.0, 3.0, 4.0, 5.0 ]
 
   scope :whitelist, -> {
     where('last_logged_in_at >= ?', Time.zone.today.to_time).
@@ -155,15 +157,15 @@ class User < ApplicationRecord
   end
 
   def level
-    if user_score >= 5.0
+    if user_score >= LEVEL_TIER[4]
       5
-    elsif user_score >= 4.0
+    elsif user_score >= LEVEL_TIER[3]
       4
-    elsif user_score >= 3.0
+    elsif user_score >= LEVEL_TIER[2]
       3
-    elsif user_score >= 2.0
+    elsif user_score >= LEVEL_TIER[1]
       2
-    elsif user_score >= 1.0
+    elsif user_score >= LEVEL_TIER[0]
       1
     else
       0
@@ -171,9 +173,12 @@ class User < ApplicationRecord
   end
 
   def user_score(force = false, debug = false)
-    return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 24.hours.ago && !force
+    # TODO: Tune user score updates period
+    return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 1.hour.ago && !force
 
     score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
+
+    puts "#{credibility_score} * #{activity_score} * #{curation_score} * #{hunter_score}" if debug
 
     self.cached_user_score = score
     self.user_score_updated_at = Time.now
@@ -204,7 +209,7 @@ class User < ApplicationRecord
     else
       0
     end
-    puts "Reputation: #{score}" if debug
+    puts "Reputation: #{reputation} - Score: #{score}" if debug
 
     if created_at > 1.week.ago
       score *= 0.6
@@ -261,7 +266,7 @@ class User < ApplicationRecord
       logger.log " - Jerk Score: #{jerk_score}"
       chain = true if chain == :optional
     else
-      logger.log "@#{username} --> No diff (DS: #{ds} / Jerk Count: #{jerk_score}"
+      logger.log "@#{username} --> No diff (DS: #{ds} / Jerk Count: #{jerk_score})"
       chain = false if chain == :optional
     end
 

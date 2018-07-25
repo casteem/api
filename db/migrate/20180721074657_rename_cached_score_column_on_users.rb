@@ -4,20 +4,20 @@ class RenameCachedScoreColumnOnUsers < ActiveRecord::Migration[5.2]
     rename_column :users, :diversity_score_updated_at, :user_score_updated_at
     add_column :users, :activity_score, :float, default: 1.0
 
-  #   Post.for_a_month.each do |post|
-  #     post.valid_votes.each do |v|
-  #       v['weight'] = post.active_votes.select { |a| a['voter'] == v['voter'] }.first['weight']
-  #     end
-  #     post.save!
+    # Post.for_a_month.each do |post|
+    #   post.valid_votes.each do |v|
+    #     v['weight'] = post.active_votes.select { |a| a['voter'] == v['voter'] }.first['weight']
+    #   end
+    #   post.save!
 
-  #     puts "weight updated - #{post.id}"
-  #   end
+    #   puts "weight updated - #{post.id}"
+    # end.count
 
-  #   User.all.each do |user|
-  #     old_score = user.cached_user_score
-  #     user.user_score(true, false)
+    # User.all.each do |user|
+    #   old_score = user.cached_user_score
+    #   user.user_score(true, false)
 
-  #     puts "@#{user.username}: #{old_score.round(2)} -> #{user.user_score.round(2)}"
-  #   end
-  # end
+    #   puts "@#{user.username}: #{old_score.round(2)} -> #{user.user_score.round(2)}"
+    # end.count
+  end
 end

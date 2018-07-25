@@ -5,7 +5,7 @@ ROOT_DIR = '/srv/web/steemhunt/current'
 RAKE_PATH = '/home/updatebot/.rbenv/shims/bundle exec rake'
 
 every :day, at: '12:01am' do
-  command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} mod_stats reward_voters"
+  command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} mod_stats level_stats reward_voters"
 end
 
 every :day, at: '12:30am' do
