@@ -330,7 +330,7 @@ task :voting_bot2 => :environment do |t, args|
     POWER_ADDED_PER_INF_COMMENT * comments_to_vote[:influencers].size) /
     weighted_voting_unit_total)
 
-  logger.log "\n==========\nTotal #{original_post_size} posts -> #{posts.size} accepted\n"
+  logger.log "\n==========\nTotal #{original_post_size} posts -> #{posts.size} valid for voting\n"
   logger.log "Total reward (active): $#{total_reward.round(2)} SBD -> \n"
   logger.log "Commnets: #{comments_to_vote[:all_count]} in total / #{comments_to_vote[:sh_count]} on SH"
   logger.log " - Mods: #{comments_to_vote[:moderators_count]} in total -> #{comments_to_vote[:moderators].size} valid for voting"
