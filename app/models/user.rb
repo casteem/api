@@ -293,7 +293,7 @@ class User < ApplicationRecord
     ds = 1.0 if ds.nan?
 
     score = 1.0
-    score *= ds if ds < 0.5 # only penalty if ds < 0.5
+    score *= ds * 1.5 if ds < 0.5 # only penalty if ds < 0.5
     puts "Curation Score : #{score} (DS: #{ds})" if debug
 
     if voting_count < 40
