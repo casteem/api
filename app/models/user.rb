@@ -16,7 +16,8 @@ class User < ApplicationRecord
     'dontstopmenow', 'sambillingham', 'ogochukwu', 'theversatileguy', 'guyfawkes4-20', 'pialejoana', 'tobias-g', 'superoo7',
     'themanualbot', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz', 'chuuuckie', 'shaphir', 'mobi72'
   ]
-  INFLUENCER_WEIGHT_BOOST = 5
+  INFLUENCER_WEIGHT_BOOST = 3.0
+  MODERATOR_WEIGHT_BOOST = 2.0
   GUARDIAN_ACCOUNTS = [
     'jayplayco', 'fknmayhem'
   ]
@@ -350,6 +351,12 @@ class User < ApplicationRecord
 
   # 4. Boost Score (Not affected on level)
   def boost_score
-    influencer? ? INFLUENCER_WEIGHT_BOOST : 1.0
+    if influencer?
+      INFLUENCER_WEIGHT_BOOST
+    elsif moderator?
+      MODERATOR_WEIGHT_BOOST
+    else
+      1.0
+    end
   end
 end
