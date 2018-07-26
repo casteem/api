@@ -9,7 +9,7 @@ every :day, at: '12:01am' do
 end
 
 every :day, at: '12:30am' do
-  command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} sync_posts[1] voting_bot && " +
+  command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} sync_posts[1] voting_bot2 && " +
     "RAILS_ENV=#{environment} #{RAKE_PATH} sync_posts[1] && RAILS_ENV=#{environment} #{RAKE_PATH} sync_posts[8]"
 end
 
