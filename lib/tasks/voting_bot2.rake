@@ -384,7 +384,7 @@ task :voting_bot2 => :environment do |t, args|
       level_voting_weight[0] + POWER_ADDED_PER_MOD_COMMENT
     end
 
-    logger.log "[#{i + 1} / #{comments_to_vote[:moderators].size}] Voting on MOD comment (LV> #{level_voting_weight[1]}, #{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    logger.log "[#{i + 1} / #{comments_to_vote[:moderators].size}] Voting on MOD comment (LV. #{level_voting_weight[1]}, #{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
       logger.log "--> SKIPPED_MODERATOR", true
     else
@@ -401,7 +401,7 @@ task :voting_bot2 => :environment do |t, args|
     level_voting_weight = voting_weight_for(:comment, comment[:author], weight_per_unit)
     voting_weight = level_voting_weight[0] + POWER_ADDED_PER_INF_COMMENT
 
-    logger.log "[#{i + 1} / #{comments_to_vote[:influencers].size}] Voting on INF comment (LV> #{level_voting_weight[1]}, #{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    logger.log "[#{i + 1} / #{comments_to_vote[:influencers].size}] Voting on INF comment (LV. #{level_voting_weight[1]}, #{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
       logger.log "--> SKIPPED_INFLUENCER", true
     else
