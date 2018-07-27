@@ -59,7 +59,7 @@ task :voting_bot2 => :environment do |t, args|
   end
 
   def do_comment(author, permlink, rank, logger)
-    msg = "### Congratulations! Your hunt was ranked in #{rank.ordinalize} place on #{formatted_date(Date.yesterday)} on Steemhunt.\n" +
+    msg = "### Congratulations!\n" +
       "We have upvoted your post for your contribution within our community.\n" +
       "Thanks again and look forward to seeing your next hunt!\n\n" +
       "Want to chat? Join us on:\n" +
