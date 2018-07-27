@@ -8,7 +8,7 @@ every :day, at: '12:01am' do
   command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} mod_stats level_stats reward_voters"
 end
 
-every :day, at: '12:30am' do
+every :day, at: '12:10am' do
   command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} sync_posts[1] voting_bot2 && " +
     "RAILS_ENV=#{environment} #{RAKE_PATH} sync_posts[1] && RAILS_ENV=#{environment} #{RAKE_PATH} sync_posts[8]"
 end
