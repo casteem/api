@@ -31,11 +31,11 @@ class User < ApplicationRecord
   }
 
   def dau?
-    last_logged_in_at > Time.zone.today.to_time
+    last_logged_in_at && last_logged_in_at > Time.zone.today.to_time
   end
 
   def dau_yesterday?
-    last_logged_in_at > Time.zone.yesterday.to_time
+    last_logged_in_at && last_logged_in_at > Time.zone.yesterday.to_time
   end
 
   def blacklist?
