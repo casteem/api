@@ -174,8 +174,6 @@ class User < ApplicationRecord
   end
 
   def user_score(force = false, debug = false)
-    return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 4.hours.ago && !force
-
     if blacklist?
       puts "Blacklist" if debug
       return 0.0
@@ -185,6 +183,8 @@ class User < ApplicationRecord
       puts "Steemhunt" if debug
       return 0.0
     end
+
+    return cached_user_score if cached_user_score >= 0 && user_score_updated_at && user_score_updated_at > 4.hours.ago && !force
 
     score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
 

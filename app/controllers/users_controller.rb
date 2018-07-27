@@ -16,7 +16,10 @@ class UsersController < ApplicationController
     @user.log_session(request.remote_ip)
 
     if @user.save
-      render json: @user.as_json(only: [:username, :created_at, :blacklisted_at], methods: [:level, :user_score]), status: :ok
+      render json: @user.as_json(
+        only: [:username, :created_at, :blacklisted_at, :activity_score],
+        methods: [:level, :user_score, :credibility_score, :curation_score, :hunter_score, :boost_score]
+      ), status: :ok
     else
       render json: { error: @user.errors.full_messages.first }, status: :unprocessable_entity
     end
