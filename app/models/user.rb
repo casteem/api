@@ -9,7 +9,7 @@ class User < ApplicationRecord
   ADMIN_ACCOUNTS = ['steemhunt', 'tabris', 'project7', 'astrocket']
   MODERATOR_ACCOUNTS = [
     'tabris', 'project7',
-    'teamhumble', 'folken', 'urbangladiator', 'chronocrypto', 'dayleeo', 'fknmayhem', 'jayplayco', 'bitrocker2020', 'joannewong',
+    'teamhumble', 'urbangladiator', 'chronocrypto', 'dayleeo', 'fknmayhem', 'jayplayco', 'bitrocker2020', 'joannewong',
     'geekgirl', 'playitforward'
   ]
   INFLUENCER_ACCOUNTS = [
