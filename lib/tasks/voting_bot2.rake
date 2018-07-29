@@ -35,7 +35,8 @@ task :voting_bot2 => :environment do |t, args|
   POWER_ADDED_PER_INF_COMMENT = 0.50
 
   MAX_HUNT_VOTING_COUNT = 1
-  MAX_COMMENT_VOTING_COUNT = 10
+  MAX_COMMENT_VOTING_COUNT = 5
+  MAX_INF_COMMENT_VOTING_COUNT = 10
   HUNT_VOTING_WEIGHT_UNIT = 10
   COMMENT_VOTING_WEIGHT_UNIT = 1
 
@@ -259,7 +260,7 @@ task :voting_bot2 => :environment do |t, args|
           next
         end
 
-        if comments_to_vote[:author_count][comment['author']] >= MAX_COMMENT_VOTING_COUNT
+        if comments_to_vote[:author_count][comment['author']] >= MAX_INF_COMMENT_VOTING_COUNT
           logger.log "--> MAX MAX_COMMENT_VOTING_COUNT REACHED: @#{comment['author']}"
           next
         end
@@ -316,13 +317,14 @@ task :voting_bot2 => :environment do |t, args|
   posts = posts.reject { |post| posts_to_remove.include?(post.id) }
   total_reward = posts.reduce(0) { |s, p| s + p.payout_value }
 
+  # Calculates the total voting weight unit for actual voting weights
   weighted_voting_unit_total = 0
   posts.each do |post|
     weighted_voting_unit_total += voting_weight_for(:hunt, post.author, 1)[0]
   end
   comments_to_vote[:author_count].each do |username, count|
     weighted_voting_unit_total += voting_weight_for(:comment, username, 1)[0] *
-      (count >= MAX_COMMENT_VOTING_COUNT ? MAX_COMMENT_VOTING_COUNT : count) # Limit for mods comments
+      (count > MAX_COMMENT_VOTING_COUNT ? MAX_COMMENT_VOTING_COUNT : count) # Limit for mods, inf comments
   end
 
   weight_per_unit = ((POWER_TOTAL_POST -
@@ -360,7 +362,7 @@ task :voting_bot2 => :environment do |t, args|
   comments_to_vote[:normal].each_with_index do |comment, i|
     voting_weight = voting_weight_for(:comment, comment[:author], weight_per_unit)
 
-    logger.log "[#{i + 1} / #{comments_to_vote[:normal].size}] Voting on review comment (LV. #{voting_weight[1]}, #{voting_weight[0].round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
+    logger.log "[#{i + 1} / #{comments_to_vote[:normal].size}] Voting on comment (LV. #{voting_weight[1]}, #{voting_weight[0].round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
       logger.log "--> SKIPPED_REVIEW", true
     else
@@ -374,7 +376,7 @@ task :voting_bot2 => :environment do |t, args|
 
   mod_voted_count = {}
   comments_to_vote[:moderators].each_with_index do |comment, i|
-    # First 10 comments should be voted as `normal voting weight + 0.6%`
+    # First 5 comments should be voted as `normal voting weight + 0.6%`
     # Others just flat 0.6%
     mod_voted_count[comment[:author]] ||= 0
     level_voting_weight = voting_weight_for(:comment, comment[:author], weight_per_unit)
@@ -397,9 +399,17 @@ task :voting_bot2 => :environment do |t, args|
 
   logger.log "\n==========\nVOTING ON #{comments_to_vote[:influencers].size} INFLUENCER COMMENTS\n==========", true
 
+  inf_voted_count = {}
   comments_to_vote[:influencers].each_with_index do |comment, i|
+    # First 5 comments should be voted as `normal voting weight + 0.5%`
+    # Other 5 comments just flat 0.5%
+    inf_voted_count[comment[:author]] ||= 0
     level_voting_weight = voting_weight_for(:comment, comment[:author], weight_per_unit)
-    voting_weight = level_voting_weight[0] + POWER_ADDED_PER_INF_COMMENT
+    voting_weight = if inf_voted_count[comment[:author]] >= MAX_COMMENT_VOTING_COUNT
+      POWER_ADDED_PER_INF_COMMENT
+    else
+      level_voting_weight[0] + POWER_ADDED_PER_INF_COMMENT
+    end
 
     logger.log "[#{i + 1} / #{comments_to_vote[:influencers].size}] Voting on INF comment (LV. #{level_voting_weight[1]}, #{voting_weight.round(2)}%): @#{comment[:author]}/#{comment[:permlink]}", true
     if comment[:should_skip]
@@ -407,6 +417,7 @@ task :voting_bot2 => :environment do |t, args|
     else
       sleep(3) unless TEST_MODE
       res = do_vote(comment[:author], comment[:permlink], voting_weight, logger)
+      inf_voted_count[comment[:author]] += 1
       # logger.log "--> VOTED_INFLUENCER: #{res.inspect}", true
     end
   end
