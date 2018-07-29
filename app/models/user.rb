@@ -202,17 +202,25 @@ class User < ApplicationRecord
 
   # 1. Account Credibility
   def credibility_score(debug = false)
-    score = (reputation - 35) * 0.12
+    score = (self.reputation - 35) * 0.12
     score = 3.0 if score > 3.0
     score = 0.0 if score < 0
-    puts "Reputation: #{reputation} - Score: #{score}" if debug
+    puts "Reputation: #{self.reputation} - Score: #{score}" if debug
 
-    if created_at > 1.week.ago
+    if self.created_at > 1.week.ago
       score *= 0.6
-    elsif created_at > 1.month.ago
+    elsif self.created_at > 1.month.ago
       score *= 0.8
     end
-    puts "Age check: #{score} - #{(Time.now - created_at).round / 86400} days" if debug
+    puts "Age check: #{score} - #{(Time.now - self.created_at).round / 86400} days" if debug
+
+    ip_counts = User.all.group(:last_ip).count[self.last_ip]
+    if ip_counts && ip_counts > 1
+      score *= 1.0 / ip_counts
+
+      alts = User.where(last_ip: self.last_ip).pluck(:username)
+      puts "Alt checks: #{score} - #{ip_counts} alts: #{alts}" if debug
+    end
 
     # TODO: follower count
     # TODO: Steemit post, comment count
