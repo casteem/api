@@ -310,7 +310,7 @@ class User < ApplicationRecord
 
     # Circle voting penalty
     if self.circle_vote_count > 10
-      score *= (10.0 / self.circle_vote_count)
+      score *= (10.0 / (self.circle_vote_count * 1.5))
     end
     puts "Circle Voting: #{score} (JS: #{self.circle_vote_count})" if debug
 
