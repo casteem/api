@@ -188,7 +188,7 @@ class User < ApplicationRecord
 
     score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
 
-    puts "#{credibility_score} * #{activity_score} * #{curation_score} * #{hunter_score}" if debug
+    puts "#{credibility_score} * #{activity_score} * #{curation_score} * #{hunter_score} = #{score}" if debug
 
     self.cached_user_score = score
     self.user_score_updated_at = Time.now
