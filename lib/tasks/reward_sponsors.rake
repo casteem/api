@@ -84,7 +84,7 @@ task :reward_sponsors, [:week, :steem_to_distribute, :write]=> :environment do |
         "#{(total_proportion * 100).round(2)}% | #{formatted_number(total_steem_distributed, 3)} | " +
         "#{formatted_number(total_hunt_distributed, 0)}"
 
-  logger.log "\n==========\nSEND #{formatted_number(total_steem_distributed)} STEEM TO #{steem_transactions.size} SPONSORS (#{json.size - steem_transactions.size} omitted less than 0.001)\n==========", true
+  logger.log "\n==========\nSEND #{formatted_number(total_steem_distributed, 3)} STEEM TO #{steem_transactions.size} SPONSORS (#{json.size - steem_transactions.size} omitted less than 0.001)\n==========", true
 
   if should_write
     steem_transactions.each do |t|
