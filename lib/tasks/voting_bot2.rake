@@ -338,7 +338,7 @@ task :voting_bot2 => :environment do |t, args|
   logger.log " - Mods: #{comments_to_vote[:moderators_count]} in total -> #{comments_to_vote[:moderators].size} valid for voting"
   logger.log " - Infs: #{comments_to_vote[:influencers_count]} in total -> #{comments_to_vote[:influencers].size} valid for voting"
   logger.log " - Normal: #{comments_to_vote[:normal_count]} in total -> #{comments_to_vote[:normal].size} valid for voting"
-  logger.log "\nVoting start with #{POWER_TOTAL_POST.round(2)}% VP on Posts"
+  logger.log "\nVoting start with #{POWER_TOTAL_POST.round(2)}% VP in total"
   logger.log " - Voting weight per unit: #{weight_per_unit.round(2)}%\n==========", true
 
   posts.each_with_index do |post, i|
