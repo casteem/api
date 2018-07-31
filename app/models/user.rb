@@ -19,7 +19,7 @@ class User < ApplicationRecord
   INFLUENCER_WEIGHT_BOOST = 3.0
   MODERATOR_WEIGHT_BOOST = 2.0
   GUARDIAN_ACCOUNTS = [
-    'jayplayco', 'fknmayhem'
+    'jayplayco'
   ]
 
   LEVEL_TIER = [ 1.0, 2.0, 3.0, 5.0, 8.0 ]
@@ -188,7 +188,7 @@ class User < ApplicationRecord
 
     score = credibility_score(debug) *  activity_score * curation_score(debug) * hunter_score(debug)
 
-    puts "#{credibility_score} * #{activity_score} * #{curation_score} * #{hunter_score} = #{score}" if debug
+    puts "#{credibility_score.round(2)} * #{activity_score.round(2)} * #{curation_score.round(2)} * #{hunter_score.round(2)} = #{score.round(2)}" if debug
 
     self.cached_user_score = score
     self.user_score_updated_at = Time.now
@@ -270,7 +270,7 @@ class User < ApplicationRecord
       logger.log " - Jerk Score: #{jerk_score}"
       chain = true if chain == :optional
     else
-      logger.log "@#{username} --> No diff (DS: #{ds} / Jerk Count: #{jerk_score})"
+      logger.log "@#{username} --> No diff (DS: #{ds.round(2)} / Jerk Count: #{jerk_score})"
       chain = false if chain == :optional
     end
 
@@ -301,26 +301,26 @@ class User < ApplicationRecord
 
     score = 1.0
     score *= ds * 1.5 if ds < 0.5 # only penalty if ds < 0.5
-    puts "Curation Score : #{score} (DS: #{ds})" if debug
+    puts "Curation Score : #{score.round(2)} (DS: #{ds.round(2)})" if debug
 
     if voting_count < 40
       # Disadvantage if not enough voting data (min 0.6)
       score *= (voting_count + 60) / 100.0
-      puts "DS not enough data: #{score}" if debug
+      puts "DS not enough data: #{score.round(2)}" if debug
     else
       # Active curator advantage
       active_score = 1.0 + (total_voted_weight / 20000000.0)
       active_score = 4.0 if active_score > 4
 
       score *= active_score
-      puts "Active Curation Advantage: #{score}" if debug
+      puts "Active Curation Advantage: #{score.round(2)}" if debug
     end
 
     # Circle voting penalty
     if self.circle_vote_count > 10
       score *= (10.0 / (self.circle_vote_count * 1.5))
     end
-    puts "Circle Voting: #{score} (JS: #{self.circle_vote_count})" if debug
+    puts "Circle Voting: #{score.round(2)} (JS: #{self.circle_vote_count})" if debug
 
     score
   end
@@ -348,10 +348,10 @@ class User < ApplicationRecord
     score = my_average / (all_average / 1.5) if score < 1
     # Max 1.5 (TODO: Higher max limit if our ranking board represnet the hunt quality better)
     score = 1.5 if score > 1.5
-    puts "Hunt Score: #{score}" if debug
+    puts "Hunt Score: #{score.round(2)}" if debug
 
     score *= my_count[true] / all_count.to_f # Disadvantage with review pass rate
-    puts "Review disadvantage: #{score}" if debug
+    puts "Review disadvantage: #{score.round(2)}" if debug
 
     score
   end
