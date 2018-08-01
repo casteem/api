@@ -10,9 +10,25 @@ class HuntTransactionsController < ApplicationController
 
     render json: {
       balance: @current_user.hunt_balance,
+      sp_to_claim: 0,
       eth_address: @current_user.eth_address,
       transactions: @transactions
     }
+  end
+
+  def sp_claim
+    sp_to_claim = @current_user.sp_to_claim
+
+    begin
+      raise 'Nothing to claim' unless sp_to_claim > 0
+
+      HuntTransaction.claim_sp!(@current_user.username, sp_to_claim)
+      t = HuntTransaction.find_by(receiver: @current_user.username, bounty_type: 'sp_claim')
+
+      render json: { success: true, transaction: t }
+    rescue => e
+      render json: { error: e.message }
+    end
   end
 
   private

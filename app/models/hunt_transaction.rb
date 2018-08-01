@@ -70,8 +70,15 @@ class HuntTransaction < ApplicationRecord
     reward_user!(username, amount, 'voting', "Daily reward for voting contribution - #{formatted_date(date)}", true)
   end
 
-  def self.reward_resteems!(username, amount, date)
-    reward_user!(username, amount, 'resteem', "Daily reward for resteem contribution - #{formatted_date(date)}", true)
+  # DEPRECATED
+  # def self.reward_resteems!(username, amount, date)
+  #   reward_user!(username, amount, 'resteem', "Daily reward for resteem contribution - #{formatted_date(date)}", true)
+  # end
+
+  def self.claim_sp!(username, sp_amount)
+    raise 'Already claimed' if self.exists?(receiver: username, bounty_type: 'sp_claim')
+
+    reward_user!(username, sp_amount, 'sp_claim', "Airdrop for SP Holder - @#{username}: #{formatted_number(sp_amount)} SP - #{formatted_date(Time.now)}", true)
   end
 
   private_class_method def self.reward_user!(username, amount, bounty_type, memo, check_dups = false)

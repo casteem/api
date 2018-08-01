@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_07_21_074657) do
+ActiveRecord::Schema.define(version: 2018_08_01_024533) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -75,6 +75,7 @@ ActiveRecord::Schema.define(version: 2018_07_21_074657) do
     t.integer "circle_vote_count", default: 0
     t.string "last_ip"
     t.float "activity_score", default: 1.0
+    t.float "delegated_vesting_shares", default: -1.0
     t.index ["encrypted_token", "reputation"], name: "index_users_on_encrypted_token_and_reputation"
     t.index ["last_logged_in_at"], name: "index_users_on_last_logged_in_at"
     t.index ["username"], name: "index_users_on_username", unique: true
