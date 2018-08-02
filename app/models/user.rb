@@ -30,6 +30,8 @@ class User < ApplicationRecord
     where('blacklisted_at IS NULL OR blacklisted_at < ?', 1.month.ago)
   }
 
+  @@blacklists = File.read("#{Rails.root}/db/buildawhale_blacklist.txt").split
+
   def dau?
     last_logged_in_at && last_logged_in_at > Time.zone.today.to_time
   end
@@ -201,6 +203,10 @@ class User < ApplicationRecord
   alias voting_weight user_score
 
   # 1. Account Credibility
+  def external_blacklist?
+    @@blacklists.include?(self.username)
+  end
+
   def credibility_score(debug = false)
     score = (self.reputation - 35) * 0.12
     score = 3.0 if score > 3.0
@@ -219,7 +225,12 @@ class User < ApplicationRecord
       score *= 1.5 / ip_counts
 
       alts = User.where(last_ip: self.last_ip).pluck(:username)
-      puts "Alt checks: #{score} - #{ip_counts} alts: #{alts}" if debug
+      puts "Alt checks: #{score.round(2)} - #{ip_counts} alts: #{alts}" if debug
+    end
+
+    if external_blacklist?
+      score *= 0.5
+      puts "External blacklists: #{score.round(2)}" if debug
     end
 
     # TODO: follower count
