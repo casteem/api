@@ -303,7 +303,7 @@ class User < ApplicationRecord
     weighted_receiver_count = 0
     counts.each do |id, count|
       voting_count += count
-      weighted_receiver_count += (weighted_counts[id] / count.to_f)
+      weighted_receiver_count += (weighted_counts[id].to_f / count.to_f)
       total_weighted += weighted_counts[id]
     end
 
