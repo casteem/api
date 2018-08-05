@@ -19,7 +19,7 @@ task :voting_bot2 => :environment do |t, args|
     current_vp > 100 ? 100.0 : current_vp
   end
 
-  TEST_MODE = true # Should be false on production
+  TEST_MODE = false # Should be false on production
   # NOTE: it's more like 1100 as vp decays recursively depending on the current vp
   # We keep 100 for contributor votings
   TOTAL_VP_TO_USE = 950.0
@@ -326,7 +326,7 @@ task :voting_bot2 => :environment do |t, args|
   # valid_comments_size = comments_to_vote[:normal].size
 
   logger.log "\n==========\nSelect first #{MAX_TOTAL_HUNT_VOTING_COUNT} / #{posts.size} posts for voting\n==========", true
-  posts = post.first(MAX_TOTAL_HUNT_VOTING_COUNT)
+  posts = posts.first(MAX_TOTAL_HUNT_VOTING_COUNT)
 
   # Calculates the total voting weight unit for actual voting weights
   weighted_voting_unit_total = 0
