@@ -12,7 +12,7 @@ task :reward_sponsors, [:week, :steem_to_distribute, :write]=> :environment do |
   REWARD_OPT_OUT = ['tabris', 'project7', 'misterdelegation']
 
   logger = SLogger.new('reward-log')
-  logger.log "== SPONSOR REWARD DISTRIBUTION - WEEK #{week} ==", true
+  logger.log "## SPONSOR REWARD DISTRIBUTION - WEEK #{week}", true
 
   begin
     # REF: https://helloacm.com/tools/steemit/delegators/
@@ -35,7 +35,7 @@ task :reward_sponsors, [:week, :steem_to_distribute, :write]=> :environment do |
     end
   end
 
-  logger.log "\n==========\nTotal: #{formatted_number(total_vests)} VESTS (#{formatted_number(total_sps.round)} SP) / #{formatted_number(total_opt_out_vests)} VESTS OPTED OUT\n==========", true
+  logger.log "Total: #{formatted_number(total_vests)} VESTS (#{formatted_number(total_sps.round)} SP) / #{formatted_number(total_opt_out_vests)} VESTS OPTED OUT", true
 
   logger.log "|  User Name  |   Delegated   | STEEM Rewards | HUNT Tokens Reserved | HUNT Tokens Total |"
   logger.log "|-------------|---------------|---------------|----------------------|-------------------|"
