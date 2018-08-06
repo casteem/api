@@ -10,7 +10,7 @@ class HuntTransactionsController < ApplicationController
 
     render json: {
       balance: @current_user.hunt_balance,
-      sp_to_claim: 0,
+      sp_to_claim: @current_user.sp_to_claim,
       eth_address: @current_user.eth_address,
       transactions: @transactions
     }
