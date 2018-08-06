@@ -7,7 +7,7 @@ class ErcTransaction < ApplicationRecord
   validate :validate_hash_format
   scope :pending, -> { where(status: 'pending') }
 
-  VALID_STATUS = %w(pending sent error)
+  VALID_STATUS = %w(pending running sent error)
   validates :status, inclusion: { in: VALID_STATUS }
 
   def validate_hash_format
