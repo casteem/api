@@ -5,7 +5,7 @@ class HuntTransaction < ApplicationRecord
   BOUNTY_TYPES = %w(sponsor voting resteem sp_claim posting commenting referral report moderator contribution guardian)
 
   validates_presence_of :amount, :memo
-  validate :validate_sender_and_receiver, :validate_eth_format
+  validate :validate_sender_and_receiver
   validates :memo, length: { maximum: 255 }
   validates :bounty_type, inclusion: { in: BOUNTY_TYPES }
 
@@ -24,16 +24,6 @@ class HuntTransaction < ApplicationRecord
       errors.add(:receiver, "cannot be empty")
     elsif !receiver.blank? && !eth_address.blank?
       errors.add(:eth_address, "Only one of internal or external receiver can be assigned")
-    end
-  end
-
-  def validate_eth_format
-    unless eth_address.blank?
-      errors.add(:eth_address, "Wrong format") if eth_address.size != 42 || !eth_address.downcase.start_with?('0x')
-    end
-
-    unless eth_tx_hash.blank?
-      errors.add(:eth_tx_hash, "Wrong format") if eth_tx_hash.size != 66 || !eth_tx_hash.downcase.start_with?('0x')
     end
   end
 
