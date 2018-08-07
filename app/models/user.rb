@@ -311,21 +311,20 @@ class User < ApplicationRecord
     ds = 1.0 if ds.nan?
 
     score = 1.0
-    score *= ds * 1.5 if ds < 0.5 # only penalty if ds < 0.5
+    score *= ds * 2 if ds < 0.5 # only penalty if ds < 0.5
     puts "Curation Score : #{score.round(2)} (DS: #{ds.round(2)})" if debug
 
     if voting_count < 40
       # Disadvantage if not enough voting data (min 0.6)
       score *= (voting_count + 60) / 100.0
       puts "DS not enough data: #{score.round(2)}" if debug
-    else
-      # Active curator advantage
-      active_score = 1.0 + (total_voted_weight / 20000000.0)
-      active_score = 4.0 if active_score > 4
-
-      score *= active_score
-      puts "Active Curation Advantage: #{score.round(2)}" if debug
     end
+
+    # Active curator advantage
+    active_score = 1.0 + (total_voted_weight / 20000000.0)
+    active_score = 4.0 if active_score > 4
+    score *= active_score
+    puts "Active Curation Advantage: #{score.round(2)}" if debug
 
     # Circle voting penalty
     if self.circle_vote_count > 10
@@ -354,10 +353,6 @@ class User < ApplicationRecord
     end
 
     score = my_average.to_f / all_average
-
-    # Disadvantage if my average HS is lower than the 2/3 of all posts' 1 month average
-    score = my_average / (all_average / 1.5) if score < 1
-    # Max 1.5 (TODO: Higher max limit if our ranking board represnet the hunt quality better)
     score = 1.5 if score > 1.5
     puts "Hunt Score: #{score.round(2)}" if debug
 
