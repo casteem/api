@@ -16,7 +16,11 @@ Rails.application.routes.draw do
   end
 
 
-  resources :users, only: [:create]
+  resources :users, only: [:create] do
+    collection do
+      post 'set_eth_address'
+    end
+  end
 
   resources :hunt_transactions, only: [:index] do
     collection do

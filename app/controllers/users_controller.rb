@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  before_action :ensure_login!, only: [:set_eth_address]
+
   # Create or Update user's encrypted_token
   # POST /users.json
   def create
@@ -23,6 +25,12 @@ class UsersController < ApplicationController
     else
       render json: { error: @user.errors.full_messages.first }, status: :unprocessable_entity
     end
+  end
+
+  def set_eth_address
+    render json: { result: 'OK', eth_address: '0x8f4666b7f99ecabc74ec266cc9f47ed65444d590' }
+    # render json: { result: 'OK', eth_address: @current_user.eth_address }
+    # render json: { error: 'The Ethereum address you entered is invalid. Please check it again.' }
   end
 
   private
