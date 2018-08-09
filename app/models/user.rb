@@ -99,7 +99,7 @@ class User < ApplicationRecord
 
   def validate_eth_format
     unless eth_address.blank?
-      errors.add(:eth_address, "Wrong format") if eth_address.size != 42 || !eth_address.downcase.start_with?('0x')
+      errors.add(:eth_address, "Wrong format") unless eth_address =~ /^0x[0-9a-f]{40}$/i
     end
   end
 
