@@ -11,14 +11,24 @@ Rails.application.routes.draw do
       get '@:author/:permlink', to: 'posts#show', constraints: { author: /[^\/]+/ }
       put '@:author/:permlink', to: 'posts#update', constraints: { author: /[^\/]+/ }
       delete '@:author/:permlink', to: 'posts#destroy', constraints: { author: /[^\/]+/ }
-      get 'tag/:tag', to: 'posts#tag'      
+      get 'tag/:tag', to: 'posts#tag'
     end
   end
 
 
-  resources :users, only: [:create]
+  resources :users, only: [:create] do
+    collection do
+      post 'set_eth_address'
+    end
+  end
 
-  resources :hunt_transactions, only: [:index]
+  resources :hunt_transactions, only: [:index] do
+    collection do
+      post 'sp_claim'
+    end
+  end
+
+  resources :erc_transactions, only: [:create]
 
   get '*foo', to: lambda { |env| [404, {}, [ '{"error": "NOT_FOUND"}' ]] }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

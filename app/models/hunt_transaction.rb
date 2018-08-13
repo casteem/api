@@ -4,38 +4,9 @@ require 's_logger'
 class HuntTransaction < ApplicationRecord
   BOUNTY_TYPES = %w(sponsor voting resteem sp_claim posting commenting referral report moderator contribution guardian)
 
-  validates_presence_of :amount, :memo
-  validate :validate_sender_and_receiver, :validate_eth_format
+  validates_presence_of :amount, :memo, :sender, :receiver
   validates :memo, length: { maximum: 255 }
   validates :bounty_type, inclusion: { in: BOUNTY_TYPES }
-
-  def validate_sender_and_receiver
-    if sender.blank? && receiver.blank?
-      errors.add(:receiver, "one side of transaction should be in off-chain")
-    end
-
-    if sender.blank? && eth_address.blank?
-      errors.add(:sender, "cannot be empty")
-    elsif !sender.blank? && !eth_address.blank?
-      errors.add(:eth_address, "Only one of internal or external receiver can be assigned")
-    end
-
-    if receiver.blank? && eth_address.blank?
-      errors.add(:receiver, "cannot be empty")
-    elsif !receiver.blank? && !eth_address.blank?
-      errors.add(:eth_address, "Only one of internal or external receiver can be assigned")
-    end
-  end
-
-  def validate_eth_format
-    unless eth_address.blank?
-      errors.add(:eth_address, "Wrong format") if eth_address.size != 42 || !eth_address.downcase.start_with?('0x')
-    end
-
-    unless eth_tx_hash.blank?
-      errors.add(:eth_tx_hash, "Wrong format") if eth_tx_hash.size != 66 || !eth_tx_hash.downcase.start_with?('0x')
-    end
-  end
 
   def self.reward_reporter!(username, amount)
     logger = SLogger.new('reward-log')
@@ -70,8 +41,15 @@ class HuntTransaction < ApplicationRecord
     reward_user!(username, amount, 'voting', "Daily reward for voting contribution - #{formatted_date(date)}", true)
   end
 
-  def self.reward_resteems!(username, amount, date)
-    reward_user!(username, amount, 'resteem', "Daily reward for resteem contribution - #{formatted_date(date)}", true)
+  # DEPRECATED
+  # def self.reward_resteems!(username, amount, date)
+  #   reward_user!(username, amount, 'resteem', "Daily reward for resteem contribution - #{formatted_date(date)}", true)
+  # end
+
+  def self.claim_sp!(username, sp_amount)
+    raise 'Already claimed' if self.exists?(receiver: username, bounty_type: 'sp_claim')
+
+    reward_user!(username, sp_amount, 'sp_claim', "Airdrop for SP Holder - @#{username}: #{formatted_number(sp_amount)} SP - #{formatted_date(Time.now)}", true)
   end
 
   private_class_method def self.reward_user!(username, amount, bounty_type, memo, check_dups = false)
@@ -81,10 +59,10 @@ class HuntTransaction < ApplicationRecord
     user = User.find_by(username: username)
     user = User.create!(username: username, encrypted_token: '') unless user
 
-    send!(amount, 'steemhunt', user.username, nil, bounty_type, memo)
+    send!(amount, 'steemhunt', user.username, bounty_type, memo)
   end
 
-  private_class_method def self.send!(amount, sender_name = nil, receiver_name = nil, eth_address = nil, bounty_type = nil, memo = nil)
+  private_class_method def self.send!(amount, sender_name = nil, receiver_name = nil, bounty_type = nil, memo = nil)
     return if amount == 0
 
     sender = sender_name.blank? ? nil : User.find_by(username: sender_name)
@@ -94,7 +72,6 @@ class HuntTransaction < ApplicationRecord
       self.create!(
         sender: sender_name,
         receiver: receiver_name,
-        eth_address: eth_address,
         amount: amount,
         bounty_type: bounty_type,
         memo: memo
@@ -106,12 +83,6 @@ class HuntTransaction < ApplicationRecord
       unless receiver.blank?
         receiver.update!(hunt_balance: receiver.hunt_balance + amount)
       end
-    end
-
-    unless eth_address.blank?
-      # TODO: ETH Transaction
-
-      # TODO: Rollback DB on errors - should be in a separate transaction
     end
   end
 end

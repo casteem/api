@@ -5,6 +5,7 @@ class User < ApplicationRecord
   validates_presence_of :username
   validate :validate_eth_format
   has_many :hunt_transactions
+  has_many :erc_transactions
 
   ADMIN_ACCOUNTS = ['steemhunt', 'tabris', 'project7', 'astrocket']
   MODERATOR_ACCOUNTS = [
@@ -80,7 +81,7 @@ class User < ApplicationRecord
   end
 
   def validate!(token)
-    res = User.fetch_data(token)
+    res = User.fetch_with_token(token)
 
     if res['user'] == self.username
       self.update!(
@@ -97,13 +98,13 @@ class User < ApplicationRecord
 
   def validate_eth_format
     unless eth_address.blank?
-      errors.add(:eth_address, "Wrong format") if eth_address.size != 42 || !eth_address.downcase.start_with?('0x')
+      errors.add(:eth_address, "is incorrect") unless eth_address =~ /^0x[0-9a-f]{40}$/i
     end
   end
 
   # Fetch user JSON data from SteemConnect
   # Only used when we need to double check current user's token
-  def self.fetch_data(token)
+  def self.fetch_with_token(token)
     retries = 0
 
     begin
@@ -126,6 +127,22 @@ class User < ApplicationRecord
 
       { error: e.message }
     end
+  end
+
+  # def self.fetch_from_public(username)
+  #   response = Net::HTTP.get(URI("https://steemit.com/@#{username}.json"))
+  #   JSON.parse(response)
+  # end
+
+  def sp_to_claim
+    exclusion = ['steem', 'steemit', 'steemitblog', 'misterdelegation' ]
+    return 0.0 if exclusion.include?(self.username)
+
+    return 0.0 if HuntTransaction.exists?(receiver: self.username, bounty_type: 'sp_claim')
+
+    steem_per_vest = 0.000495
+
+    steem_per_vest * self.vesting_shares
   end
 
   def log_session(ip_addr)
