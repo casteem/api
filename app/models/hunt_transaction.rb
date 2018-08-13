@@ -3,6 +3,7 @@ require 's_logger'
 
 class HuntTransaction < ApplicationRecord
   BOUNTY_TYPES = %w(sponsor voting resteem sp_claim posting commenting referral report moderator contribution guardian)
+  SP_CLAIM_EXCLUSION = %w(steem steemit misterdelegation)
 
   validates_presence_of :amount, :memo, :sender, :receiver
   validates :memo, length: { maximum: 255 }
@@ -48,6 +49,8 @@ class HuntTransaction < ApplicationRecord
 
   def self.claim_sp!(username, sp_amount)
     raise 'Already claimed' if self.exists?(receiver: username, bounty_type: 'sp_claim')
+    raise 'Excluded' if SP_CLAIM_EXCLUSION.include?(username)
+    raise 'Airdrop for SP holder has finished' if HuntTransaction.where(bounty_type: 'sp_claim').sum(:amount) > 100000000
 
     reward_user!(username, sp_amount, 'sp_claim', "Airdrop for SP Holder - @#{username}: #{formatted_number(sp_amount)} SP - #{formatted_date(Time.now)}", true)
   end
