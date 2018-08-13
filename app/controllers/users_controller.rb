@@ -28,9 +28,15 @@ class UsersController < ApplicationController
   end
 
   def set_eth_address
-    render json: { result: 'OK', eth_address: '0x8f4666b7f99ecabc74ec266cc9f47ed65444d590' }
-    # render json: { result: 'OK', eth_address: @current_user.eth_address }
-    # render json: { error: 'The Ethereum address you entered is invalid. Please check it again.' }
+    unless @current_user.eth_address.nil?
+      render json: { error: 'You have already linked you Ethereum address.' } and return
+    end
+
+    if @current_user.update(eth_address: params[:eth_address])
+      render json: { result: 'OK', eth_address: @current_user.eth_address }
+    else
+      render json: { error: 'The Ethereum address you entered is invalid. Please check it again.' }
+    end
   end
 
   private

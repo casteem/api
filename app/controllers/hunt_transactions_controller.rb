@@ -5,14 +5,20 @@ class HuntTransactionsController < ApplicationController
   def index
     @transactions = HuntTransaction.
       where('sender = ? OR receiver = ?', @current_user.username, @current_user.username).
-      order('created_at DESC').
-      limit(1000)
+      order(created_at: :desc).
+      limit(500)
+
+    @withdrawals = ErcTransaction.
+      where(user_id: @current_user.id).
+      order(created_at: :desc).
+      limit(500)
 
     render json: {
       balance: @current_user.hunt_balance,
       sp_to_claim: @current_user.sp_to_claim,
       eth_address: @current_user.eth_address,
-      transactions: @transactions
+      transactions: @transactions,
+      withdrawals: @withdrawals
     }
   end
 

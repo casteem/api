@@ -28,6 +28,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :erc_transactions, only: [:create]
+
   get '*foo', to: lambda { |env| [404, {}, [ '{"error": "NOT_FOUND"}' ]] }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
