@@ -98,7 +98,7 @@ class User < ApplicationRecord
 
   def validate_eth_format
     unless eth_address.blank?
-      errors.add(:eth_address, "Wrong format") unless eth_address =~ /^0x[0-9a-f]{40}$/i
+      errors.add(:eth_address, "is incorrect") unless eth_address =~ /^0x[0-9a-f]{40}$/i
     end
   end
 
