@@ -87,8 +87,7 @@ class User < ApplicationRecord
       self.update!(
         encrypted_token: Digest::SHA256.hexdigest(token),
         reputation: User.rep_score(res['account']['reputation']),
-        vesting_shares: res['account']['vesting_shares'].to_f,
-        delegated_vesting_shares: res['account']['delegated_vesting_shares'].to_f
+        vesting_shares: res['account']['vesting_shares'].to_f
       )
 
       true
@@ -143,7 +142,7 @@ class User < ApplicationRecord
 
     steem_per_vest = 0.000495
 
-    steem_per_vest * (self.vesting_shares + self.delegated_vesting_shares)
+    steem_per_vest * self.vesting_shares
   end
 
   def log_session(ip_addr)
