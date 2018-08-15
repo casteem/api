@@ -40,8 +40,10 @@ gem update --system && gem install bundler
 # MARK: - Deploy
 sudo chown updatebot /srv/ && chgrp updatebot /srv
 mkdir /srv/web/;mkdir /srv/web/steemhunt;mkdir /srv/web/steemhunt/releases
-# Puma shared directories
 mkdir /srv/web/steemhunt/shared;mkdir /srv/web/steemhunt/shared/pids;mkdir /srv/web/steemhunt/shared/log;mkdir /srv/web/steemhunt/shared/sockets
+
+mkdir /srv/web/;mkdir /srv/web/token;mkdir /srv/web/token/releases
+mkdir /srv/web/token/shared;mkdir /srv/web/token/shared/pids;mkdir /srv/web/token/shared/log;mkdir /srv/web/token/shared/sockets
 
 
 # MARK: - Postgres
