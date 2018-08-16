@@ -117,6 +117,7 @@ class PostsController < ApplicationController
         @post.is_verified = false
         @post.created_at = Time.now
         @post.listed_at = Time.now
+        @post.verified_by = nil
       end
     else
       @post = Post.new(post_params)
