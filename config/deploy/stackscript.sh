@@ -106,7 +106,7 @@ server {
 ```
 sudo nginx -s reload
 
-/opt/letsencrypt/letsencrypt-auto certonly -a webroot --webroot-path=/srv/web/steemhunt/current/public -d steemhunt.com -d www.steemhunt.com -d api.steemhunt.com
+/opt/letsencrypt/letsencrypt-auto certonly -a webroot --expand --webroot-path=/srv/web/steemhunt/current/public -d steemhunt.com -d www.steemhunt.com -d api.steemhunt.com --webroot-path=/srv/web/token/current/public -d token.steemhunt.com
 
 sudo vim /etc/nginx/sites-available/steemhunt
 # Add following lines
