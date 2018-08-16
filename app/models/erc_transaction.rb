@@ -4,13 +4,18 @@ require 's_logger'
 class ErcTransaction < ApplicationRecord
   belongs_to :user
   validates_presence_of :user_id, :amount
-  validate :validate_hash_format, :check_balance, :rate_limit
+  validate :validate_hash_format
+  validate :rate_limit, :check_balance, on: :create
   scope :pending, -> { where(status: 'pending') }
   scope :today, -> { where('created_at >= ?', 24.hours.ago) }
 
   VALID_STATUS = %w(pending running sent error)
   validates :status, inclusion: { in: VALID_STATUS }
   after_create :deduct_balance!
+
+  def pending?
+    status == 'pending'
+  end
 
   def validate_hash_format
     unless tx_hash.blank?
