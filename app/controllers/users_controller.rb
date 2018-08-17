@@ -4,15 +4,16 @@ class UsersController < ApplicationController
   # Create or Update user's encrypted_token
   # POST /users.json
   def create
-    if @user = User.find_by(username: user_params[:username])
-      unless @user.validate!(user_params[:token])
-        render json: { error: 'UNAUTHORIZED' }, status: :unauthorized and return
-      end
-    else
+    @user = User.find_by(username: user_params[:username])
+    unless @user
       @user = User.new(
         username: user_params[:username],
         encrypted_token: Digest::SHA256.hexdigest(user_params[:token])
       )
+    end
+
+    unless @user.validate!(user_params[:token])
+      render json: { error: 'UNAUTHORIZED' }, status: :unauthorized and return
     end
 
     @user.log_session(request.remote_ip)

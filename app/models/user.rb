@@ -15,7 +15,7 @@ class User < ApplicationRecord
   ]
   INFLUENCER_ACCOUNTS = [
     'dontstopmenow', 'sambillingham', 'ogochukwu', 'theversatileguy', 'guyfawkes4-20', 'pialejoana', 'tobias-g', 'superoo7',
-    'themanualbot', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz', 'chuuuckie', 'shaphir', 'mobi72'
+    'themanualbot', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz', 'chuuuckie', 'shaphir', 'mobi72', 'monajam'
   ]
   INFLUENCER_WEIGHT_BOOST = 3.0
   MODERATOR_WEIGHT_BOOST = 2.0
