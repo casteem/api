@@ -3,6 +3,7 @@ require 's_logger'
 
 class ErcTransaction < ApplicationRecord
   belongs_to :user
+  validates_numericality_of :amount, greater_than_or_equal_to: 1000, on: :create
   validates_presence_of :user_id, :amount
   validate :validate_hash_format
   validate :rate_limit, :check_balance, on: :create
