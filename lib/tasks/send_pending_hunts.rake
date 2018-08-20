@@ -21,7 +21,13 @@ task :send_pending_hunts => :environment do |t, args|
     puts "Sending #{t.amount} HUNTs to @#{t.user.username}: #{eth_address}"
 
     out = `cd #{Rails.root}/../hunt && truffle exec scripts/airdrop.js --network #{NETWORK} address="#{eth_address}" amount=#{t.amount} gas_price=#{GAS_PRICE}`
-    result = JSON.parse(out.split.last)
+    begin
+      result = JSON.parse(out.split.last)
+    rescue => e
+      puts "ERC transaction failed: #{out}"
+      raise
+    end
+
     puts "-> https://ropsten.etherscan.io/tx/#{result['tx_hash']}"
 
     if result['tx_hash']
