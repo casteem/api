@@ -32,8 +32,8 @@ echo 'eval "$(rbenv init -)"' >> ~/.profile
 exec $SHELL -l
 git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 sudo apt-get install libffi-dev # https://github.com/sstephenson/ruby-build/wiki#build-failure-of-fiddle-with-ruby-220
-rbenv install 2.4.3
-rbenv rehash && rbenv global 2.4.3
+rbenv install 2.5.1
+rbenv rehash && rbenv global 2.5.1
 sudo ln -s ~/.rbenv/shims/ruby /usr/local/bin/ruby;sudo ln -s ~/.rbenv/shims/gem /usr/local/bin/gem
 gem update --system && gem install bundler
 
