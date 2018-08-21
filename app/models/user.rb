@@ -157,9 +157,9 @@ class User < ApplicationRecord
       end
     end
 
-    # Min / Max : 0.8 - 1.5
-    self.activity_score = 0.8 if self.activity_score < 0.8
-    self.activity_score = 1.5 if self.activity_score > 1.5
+    # Min / Max : 0.7 - 2.0
+    self.activity_score = 0.7 if self.activity_score < 0.7
+    self.activity_score = 2.0 if self.activity_score > 2.0
 
     self.session_count += 1
     self.last_logged_in_at = Time.now
