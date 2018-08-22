@@ -17,6 +17,7 @@ task :send_pending_hunts => :environment do |t, args|
       raise 'INVALID_STATUS'
     end
 
+    time_start = Time.now.to_i
     eth_address = "0x4fb5fffc08c1b6d6f0a841159e2685e3132c3e04" # t.user.eth_address
     puts "Sending #{t.amount} HUNTs to @#{t.user.username}: #{eth_address}"
 
@@ -29,6 +30,7 @@ task :send_pending_hunts => :environment do |t, args|
     end
 
     puts "-> https://ropsten.etherscan.io/tx/#{result['tx_hash']}"
+    puts "-> #{Time.now.to_i - time_start}s"
 
     if result['tx_hash']
       t.update! status: 'sent', tx_hash: result['tx_hash']
