@@ -190,6 +190,24 @@ class PostsController < ApplicationController
     end
   end
 
+  def signed_url
+    uid = "#{SecureRandom.hex(16)}-#{params[:filename]}"
+    path = Rails.env.production? ? "production/images/#{uid}" : "development/images/#{uid}"
+
+    s3 = Aws::S3::Resource.new
+    obj = s3.bucket('huntimages').object(path)
+
+    if obj
+      render json: {
+        uid: uid,
+        image_url: obj.public_url,
+        signed_url: obj.presigned_url(:put, acl: 'public-read')
+      }
+    else
+      render json: { error: 'UNPROCESSABLE_ENTITY' }, status: :unprocessable_entity
+    end
+  end
+
   private
     def render_moderator_fields
       render json: @post.as_json(only: [:is_active, :is_verified, :verified_by])

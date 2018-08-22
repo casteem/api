@@ -16,6 +16,8 @@ gem 'puma', '~> 3.11'
 # Cross-Origin HTTP request
 gem 'rack-cors'
 
+gem 'aws-sdk-s3', '~> 1'
+
 gem 'whenever', require: false
 gem 'dotenv-rails'
 gem 'radiator'
