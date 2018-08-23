@@ -42,7 +42,13 @@ class PostsController < ApplicationController
 
 
   def search
-    query = params[:q].to_s.gsub(/[^A-Za-z0-9\s]/, ' ').first(40)
+    # TODO: Split the serach flow between
+    #   1. title
+    #   2. url
+    # so the query can be more efficient
+
+    raw_query = params[:q].to_s.gsub(/[^A-Za-z0-9:\-\/\.]/, ' ')
+    query = raw_query.gsub(/[^A-Za-z0-9\.\s]/, ' ').first(40)
 
     render json: { posts: [] } and return if query.blank?
 
@@ -58,7 +64,7 @@ class PostsController < ApplicationController
       FROM posts) posts
     """).
       where(is_active: true).
-      where("posts.document @@ to_tsquery('english', '#{no_space} | #{terms.join(' & ')}') OR url LIKE '#{query}%'").
+      where("posts.document @@ to_tsquery('english', '#{no_space} | #{terms.join(' & ')}') OR url LIKE '#{raw_query}%'").
       order({ hunt_score: :desc }).limit(50)
 
     render json: { posts: @posts.as_json(except: [:document]) }
