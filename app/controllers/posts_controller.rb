@@ -64,7 +64,7 @@ class PostsController < ApplicationController
       FROM posts) posts
     """).
       where(is_active: true).
-      where("posts.document @@ to_tsquery('english', '#{no_space} | #{terms.join(' & ')}') OR url LIKE '#{raw_query}%'").
+      where("url LIKE '#{raw_query}%' OR lower(title) LIKE '#{raw_query.downcase}%' OR posts.document @@ to_tsquery('english', '#{no_space} | #{terms.join(' & ')}')").
       order({ hunt_score: :desc }).limit(50)
 
     render json: { posts: @posts.as_json(except: [:document]) }
