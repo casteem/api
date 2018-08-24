@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       put '@:author/:permlink', to: 'posts#update', constraints: { author: /[^\/]+/ }
       delete '@:author/:permlink', to: 'posts#destroy', constraints: { author: /[^\/]+/ }
       get 'tag/:tag', to: 'posts#tag'
+      post 'signed_url'
     end
   end
 

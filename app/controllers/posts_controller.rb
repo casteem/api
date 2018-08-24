@@ -143,7 +143,7 @@ class PostsController < ApplicationController
   # PUT /posts/@:author/:permlink
   def update
     if @post.update(post_params)
-      render json: { result: 'OK' }
+      render json: @post
     else
       render json: { error: @post.errors.full_messages.first }, status: :unprocessable_entity
     end
@@ -196,6 +196,24 @@ class PostsController < ApplicationController
       else
         render json: { error: 'UNPROCESSABLE_ENTITY' }, status: :unprocessable_entity
       end
+    end
+  end
+
+  def signed_url
+    uid = "#{SecureRandom.hex(4)}-#{params[:filename]}"
+    path = "#{Rails.env}/steemhunt/#{uid}"
+
+    s3 = Aws::S3::Resource.new
+    obj = s3.bucket('huntimages').object(path)
+
+    if obj
+      render json: {
+        uid: uid,
+        image_url: obj.public_url,
+        signed_url: obj.presigned_url(:put, acl: 'public-read')
+      }
+    else
+      render json: { error: 'UNPROCESSABLE_ENTITY' }, status: :unprocessable_entity
     end
   end
 
