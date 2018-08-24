@@ -189,7 +189,7 @@ class PostsController < ApplicationController
       mod_params[:listed_at] = Time.now if !@post.is_active && mod_params[:is_active]
 
       # unverify - unsets the moderator
-      mod_params[:verified_by] = nil if !mod_params[:is_active] && !mod_params[:is_verified]
+      mod_params[:verified_by] = nil if mod_params[:is_active] && !mod_params[:is_verified]
 
       if @post.update!(mod_params)
         render_moderator_fields
