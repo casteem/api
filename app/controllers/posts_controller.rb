@@ -137,7 +137,7 @@ class PostsController < ApplicationController
   # PUT /posts/@:author/:permlink
   def update
     if @post.update(post_params)
-      render json: { result: 'OK' }
+      render json: @post
     else
       render json: { error: @post.errors.full_messages.first }, status: :unprocessable_entity
     end
