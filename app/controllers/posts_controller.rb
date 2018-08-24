@@ -186,7 +186,7 @@ class PostsController < ApplicationController
       mod_params = post_moderate_params.merge(verified_by: @current_user.username)
 
       # roll-over to Today's ranking when post is re-verified from hidden status
-      mod_params[:listed_at] = Time.now if !@post.is_active && mod_params[:is_active]
+      # mod_params[:listed_at] = Time.now if !@post.is_active && mod_params[:is_active]
 
       # unverify - unsets the moderator
       mod_params[:verified_by] = nil if mod_params[:is_active] && !mod_params[:is_verified]
