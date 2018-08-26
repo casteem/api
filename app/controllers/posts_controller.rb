@@ -201,7 +201,7 @@ class PostsController < ApplicationController
 
   def signed_url
     uid = "#{SecureRandom.hex(4)}-#{params[:filename]}"
-    path = "#{Rails.env}/steemhunt/#{uid}"
+    path = "#{Rails.env}/steemhunt/#{Time.zone.now.strftime('%Y-%m-%d')}/#{uid}"
 
     s3 = Aws::S3::Resource.new
     obj = s3.bucket('huntimages').object(path)
