@@ -65,6 +65,7 @@ ActiveRecord::Schema.define(version: 2018_08_23_102615) do
     t.index ["created_at"], name: "index_posts_on_created_at"
     t.index ["is_active"], name: "index_posts_on_is_active"
     t.index ["listed_at"], name: "index_posts_on_listed_at"
+    t.index ["tags"], name: "index_posts_on_tags"
     t.index ["url"], name: "index_posts_on_url", unique: true
   end
 
