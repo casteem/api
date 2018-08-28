@@ -42,7 +42,6 @@ task :crawl_app_store_reviews => :environment do |t, args|
         text: r["body"].strip,
       }
     end
-    reviews.size
   end
 
   puts crawl_appstore_reviews('1100131438', 'KR')
