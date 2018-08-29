@@ -25,7 +25,7 @@ task :crawl_app_store_reviews => :environment do |t, args|
     req['User-Agent'] = 'iTunes/11.1 (Macintosh; OS X 10.9) AppleWebKit/537.71'
     req['X-Apple-Store-Front'] =  "#{STORES[country]}-2,17"
 
-    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') {|http|
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') { |http|
       http.request(req)
     }
 
@@ -37,7 +37,7 @@ task :crawl_app_store_reviews => :environment do |t, args|
         user_name: r["name"],
         user_image: nil,
         review_date: r["date"],
-        score: r["rating"],
+        score: r["rating"].to_i,
         url: "https://itunes.apple.com/#{country.downcase}/app/facebook/id#{app_id}",
         text: r["body"].strip,
       }
