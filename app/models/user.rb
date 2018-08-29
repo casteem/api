@@ -11,11 +11,11 @@ class User < ApplicationRecord
   MODERATOR_ACCOUNTS = [
     'tabris', 'project7',
     'teamhumble', 'urbangladiator', 'dayleeo', 'fknmayhem', 'jayplayco', 'bitrocker2020', 'joannewong',
-    'geekgirl', 'playitforward'
+    'geekgirl', 'playitforward', 'monajam', 'pialejoana'
   ]
   INFLUENCER_ACCOUNTS = [
-    'dontstopmenow', 'sambillingham', 'ogochukwu', 'theversatileguy', 'guyfawkes4-20', 'pialejoana', 'tobias-g', 'superoo7',
-    'themanualbot', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz', 'chuuuckie', 'shaphir', 'mobi72', 'monajam'
+    'dontstopmenow', 'sambillingham', 'ogochukwu', 'theversatileguy', 'guyfawkes4-20', 'tobias-g', 'superoo7',
+    'themanualbot', 'redtravels', 'elleok', 'joythewanderer', 'ady-was-here', 'raulmz', 'chuuuckie', 'shaphir', 'mobi72'
   ]
   INFLUENCER_WEIGHT_BOOST = 3.0
   MODERATOR_WEIGHT_BOOST = 2.0
