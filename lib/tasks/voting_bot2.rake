@@ -31,7 +31,7 @@ task :voting_bot2 => :environment do |t, args|
     # This script should not run if POWER_TOTAL_POST < 0
     (TOTAL_VP_TO_USE - (TOTAL_VP_TO_USE * (100 - current_voting_power) / 20))
   end
-  POWER_ADDED_PER_MOD_COMMENT = 0.61
+  POWER_ADDED_PER_MOD_COMMENT = 0.62
   POWER_ADDED_PER_INF_COMMENT = 0.50
 
   MAX_TOTAL_HUNT_VOTING_COUNT = 100
