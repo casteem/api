@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_08_23_102615) do
+ActiveRecord::Schema.define(version: 2018_08_31_070058) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -66,6 +66,17 @@ ActiveRecord::Schema.define(version: 2018_08_23_102615) do
     t.index ["is_active"], name: "index_posts_on_is_active"
     t.index ["listed_at"], name: "index_posts_on_listed_at"
     t.index ["url"], name: "index_posts_on_url", unique: true
+  end
+
+  create_table "referrals", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "remote_ip", null: false
+    t.integer "referral_type"
+    t.string "path"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "remote_ip"], name: "index_referrals_on_user_id_and_remote_ip", unique: true
+    t.index ["user_id"], name: "index_referrals_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
