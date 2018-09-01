@@ -360,14 +360,15 @@ class User < ApplicationRecord
     my_count = Post.where(author: username).for_a_month.group(:is_active).count
     all_count = my_count.values.sum
 
-    if moderator? # Neutral if mods & team
-      puts "Hunt Score: 1.0 - Mod" if debug
-      return 1.0
-    end
 
     if my_count[true].nil? || my_count[true] < 3
-      puts "Hunt Score: 0.8 - Not enough data" if debug
-      return 0.8
+      if moderator? # Neutral if mods & team
+        puts "Hunt Score: 1.0 - Mod" if debug
+        return 1.0
+      else
+        puts "Hunt Score: 0.8 - Not enough data" if debug
+        return 0.8
+      end
     end
 
     score = my_average.to_f / all_average
