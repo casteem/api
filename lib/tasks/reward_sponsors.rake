@@ -37,8 +37,8 @@ task :reward_sponsors, [:week, :steem_to_distribute, :write]=> :environment do |
 
   logger.log "Total: #{formatted_number(total_vests)} VESTS (#{formatted_number(total_sps.round)} SP) / #{formatted_number(total_opt_out_vests)} VESTS OPTED OUT", true
 
-  logger.log "|  User Name  |   Delegated   | STEEM Rewards | HUNT Tokens Reserved | HUNT Tokens Total |"
-  logger.log "|-------------|---------------|---------------|----------------------|-------------------|"
+  logger.log "|  User Name  |   Delegated   | Proportion | STEEM Rewards | HUNT Tokens Reserved |"
+  logger.log "|-------------|---------------|------------|---------------|----------------------|"
 
   total_steem_distributed = 0.0
   total_hunt_distributed = 0.0
@@ -46,8 +46,6 @@ task :reward_sponsors, [:week, :steem_to_distribute, :write]=> :environment do |
   steem_transactions = []
   ActiveRecord::Base.transaction do # transaction
     json.each do |j|
-      hunt_balance = 0
-
       if REWARD_OPT_OUT.include?(j['delegator'])
         proportion = steem = hunt = 0
       else
@@ -71,12 +69,10 @@ task :reward_sponsors, [:week, :steem_to_distribute, :write]=> :environment do |
             }
           end
         end
-
-        hunt_balance = User.find_by(username: j['delegator']).try(:hunt_balance).to_f
       end
 
       logger.log "| @#{j['delegator']} | #{formatted_number(j['vests'], 0)} VESTS (#{formatted_number(j['sp'].round, 0)} SP) | " +
-        "#{formatted_number(steem, 3)} | #{formatted_number(hunt, 0)} | #{formatted_number(hunt_balance, 0)} |"
+        "#{(proportion * 100).round(2)} | #{formatted_number(steem, 3)} | #{formatted_number(hunt, 0)} |"
     end
   end
 
