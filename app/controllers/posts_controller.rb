@@ -13,14 +13,14 @@ class PostsController < ApplicationController
 
     @posts = if days_ago > 0
       Post.where('listed_at >= ? AND listed_at < ?', today - days_ago.days, today - (days_ago - 1).days)
-    elsif days_ago == -1 # New (latest 1 hour)
-      Post.where('listed_at >= ?', latest)
     else # Today
-      Post.where('listed_at >= ? AND listed_at < ?', today, latest)
+      Post.where('listed_at >= ?', today)
     end
 
-    if params[:sort] == 'unverified'
-      @posts = @posts.where(is_verified: false).order('created_at ASC')
+    if days_ago == -1
+      @posts = @posts.where(is_active: true, is_verified: true).order(listed_at: :desc).limit(3)
+    elsif params[:sort] == 'unverified'
+      @posts = @posts.where(is_verified: false).order(created_at: :asc)
     else
       @posts = @posts.where(is_active: true).order(@sort)
     end
