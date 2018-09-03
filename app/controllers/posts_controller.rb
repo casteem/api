@@ -18,7 +18,7 @@ class PostsController < ApplicationController
     end
 
     if days_ago == -1
-      @posts = @posts.where(is_active: true, is_verified: true).order(listed_at: :desc).limit(3)
+      @posts = @posts.where(is_active: true, is_verified: true).order(created_at: :desc).limit(3)
     elsif params[:sort] == 'unverified'
       @posts = @posts.where(is_verified: false).order(created_at: :asc)
     else
