@@ -13,9 +13,9 @@ class PostsController < ApplicationController
 
     @posts = if days_ago > 0
       Post.where('listed_at >= ? AND listed_at < ?', today - days_ago.days, today - (days_ago - 1).days)
-    elsif days_ago == -1
+    elsif days_ago == -1 # New (latest 1 hour)
       Post.where('listed_at >= ?', latest)
-    else
+    else # Today
       Post.where('listed_at >= ? AND listed_at < ?', today, latest)
     end
 
