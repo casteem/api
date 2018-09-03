@@ -253,7 +253,7 @@ class PostsController < ApplicationController
         when 'random'
           Arel.sql('random()')
         else
-          { hunt_score: :desc, payout_value: :desc }
+          { hunt_score: :desc, payout_value: :desc, created_at: :desc }
         end
     end
 
