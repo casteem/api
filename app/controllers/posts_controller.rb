@@ -9,7 +9,6 @@ class PostsController < ApplicationController
   def index
     days_ago = params[:days_ago].to_i
     today = Time.zone.today.to_time
-    latest = Time.zone.now - 1.hours
 
     @posts = if days_ago > 0
       Post.where('listed_at >= ? AND listed_at < ?', today - days_ago.days, today - (days_ago - 1).days)
