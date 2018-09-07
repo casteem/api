@@ -16,7 +16,7 @@ class ReferralController < ApplicationController
     referral = user.referrals.build(
       remote_ip: request.remote_ip,
       path: params[:path],
-      referral: params[:referral],
+      referrer: params[:referrer],
       user_agent: request.user_agent
     )
 

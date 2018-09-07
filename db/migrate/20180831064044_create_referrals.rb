@@ -4,7 +4,7 @@ class CreateReferrals < ActiveRecord::Migration[5.2]
       t.references :user, null: false, index: false
       t.string :remote_ip, null: false
       t.string :path
-      t.string :referral
+      t.string :referrer
       t.string :user_agent
       t.datetime :created_at
     end
