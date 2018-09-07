@@ -6,6 +6,7 @@ class User < ApplicationRecord
   validate :validate_eth_format
   has_many :hunt_transactions
   has_many :erc_transactions
+  has_many :referrals
 
   ADMIN_ACCOUNTS = ['steemhunt', 'tabris', 'project7', 'astrocket']
   MODERATOR_ACCOUNTS = [
