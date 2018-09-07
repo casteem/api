@@ -1,7 +1,7 @@
 class ReferralController < ApplicationController
   def create
     unless user = User.find_by(username: params[:ref])
-      render json: { head: :no_content } and return
+      render json: { head: :no_content }, status: :not_found and return
     end
 
     type = params[:type].to_i
@@ -10,16 +10,15 @@ class ReferralController < ApplicationController
     referral = user.referrals.build(
       remote_ip: request.remote_ip,
       path: params[:path],
-      referral_type: referral_type,
-      created_at: DateTime.now
+      referral_type: referral_type
     )
 
     begin
       referral.save
-    rescue ActiveRecord::RecordNotUnique
-      nil
-    end
 
-    render json: { head: :no_content }
+      render json: { head: :no_content }
+    rescue ActiveRecord::RecordNotUnique
+      render json: { head: :no_content }, status: :conflict
+    end
   end
 end
