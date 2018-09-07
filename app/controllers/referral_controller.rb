@@ -10,18 +10,14 @@ class ReferralController < ApplicationController
       render head: :not_acceptable and return
     end
 
-    type = params[:type].to_i
-    referral_type = Referral.referral_types.include?(type) ? type : 0
-
-    referral = user.referrals.build(
-      remote_ip: request.remote_ip,
-      path: params[:path],
-      referrer: params[:referrer],
-      user_agent: request.user_agent
-    )
-
     begin
-      referral.save
+      Referral.create(
+        user_id: user.id,
+        remote_ip: request.remote_ip,
+        path: params[:path],
+        referrer: params[:referrer],
+        user_agent: request.user_agent
+      )
 
       render head: :ok
     rescue ActiveRecord::RecordNotUnique
