@@ -6,7 +6,7 @@ class CreateReferrals < ActiveRecord::Migration[5.2]
       t.string :path
       t.string :referrer
       t.string :user_agent
-      t.boolean :bonus_given, default: false
+      t.boolean :bounty_given, default: false
       t.datetime :created_at
     end
     add_index :referrals, [:user_id, :remote_ip], unique: true
