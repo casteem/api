@@ -1,7 +1,13 @@
 class ReferralController < ApplicationController
+  BOT_UA = /curl|googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|developers\.google\.com|Google-Structured-Data-Testing-Tool|redditbot|Discordbot|TelegramBot/i
+
   def create
     unless user = User.find_by(username: params[:ref])
-      render json: { head: :no_content }, status: :not_found and return
+      render head: :not_found and return
+    end
+
+    if request.user_agent =~ BOT_UA
+      render head: :not_acceptable and return
     end
 
     type = params[:type].to_i
@@ -10,15 +16,16 @@ class ReferralController < ApplicationController
     referral = user.referrals.build(
       remote_ip: request.remote_ip,
       path: params[:path],
-      referral_type: referral_type
+      referral: params[:referral],
+      user_agent: request.user_agent
     )
 
     begin
       referral.save
 
-      render json: { head: :no_content }
+      render head: :ok
     rescue ActiveRecord::RecordNotUnique
-      render json: { head: :no_content }, status: :conflict
+      render head: :conflict
     end
   end
 end
