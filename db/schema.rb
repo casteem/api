@@ -71,8 +71,9 @@ ActiveRecord::Schema.define(version: 2018_08_31_064044) do
   create_table "referrals", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "remote_ip", null: false
-    t.integer "referral_type"
     t.string "path"
+    t.string "referral"
+    t.string "user_agent"
     t.datetime "created_at"
     t.index ["user_id", "remote_ip"], name: "index_referrals_on_user_id_and_remote_ip", unique: true
   end
