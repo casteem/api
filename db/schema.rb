@@ -74,7 +74,7 @@ ActiveRecord::Schema.define(version: 2018_08_31_064044) do
     t.string "path"
     t.string "referrer"
     t.string "user_agent"
-    t.boolean "bounty_given", default: false
+    t.integer "bounty_given", default: 0
     t.datetime "created_at"
     t.index ["user_id", "remote_ip"], name: "index_referrals_on_user_id_and_remote_ip", unique: true
   end
