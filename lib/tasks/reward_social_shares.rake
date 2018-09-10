@@ -10,7 +10,7 @@ task :reward_social_shares => :environment do |t, args|
   logger.log "\n==========\n#{HUNT_DISTRIBUTION_SOCIAL} HUNT DISTRIBUTION ON SOCIAL SHARES", true
 
   today = Time.zone.today
-  referrals = Referral.where(bounty_given: 0)
+  referrals = Referral.where(bounty_given: -1)
   user_counts = referrals.group(:user_id).count.sort { |c| c[1] }
   total_count = user_counts.inject(0) { |sum, c| sum + c[1] }
   logger.log "Total #{total_count} referrals today"
@@ -35,7 +35,12 @@ task :reward_social_shares => :environment do |t, args|
   user_counts.each do |c|
     user = User.find(c[0])
     bounty = c[1] * bounty_per_share
-    HuntTransaction.reward_social_shares! user.username, bounty, today
+    begin
+      HuntTransaction.reward_social_shares! user.username, bounty, today
+    rescue => e
+      logger.log "ERROR - #{e}"
+      next
+    end
     total_given += bounty
 
     logger.log "@#{user.username} - share count: #{c[1]} - #{formatted_number(bounty)} HUNTs"

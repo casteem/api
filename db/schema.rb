@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_08_31_064044) do
+ActiveRecord::Schema.define(version: 2018_09_10_103230) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -74,7 +74,7 @@ ActiveRecord::Schema.define(version: 2018_08_31_064044) do
     t.string "path"
     t.string "referrer"
     t.string "user_agent"
-    t.integer "bounty_given", default: 0
+    t.decimal "bounty_given", default: "-1.0"
     t.datetime "created_at"
     t.index ["user_id", "remote_ip"], name: "index_referrals_on_user_id_and_remote_ip", unique: true
   end

@@ -62,6 +62,7 @@ class HuntTransaction < ApplicationRecord
   private_class_method def self.reward_user!(username, amount, bounty_type, memo, check_dups = false)
     return if amount == 0
     raise 'Duplicated Rewards' if check_dups && self.exists?(receiver: username, memo: memo)
+    raise 'Cannot reward Steemhunt' if username == 'steemhunt'
 
     user = User.find_by(username: username)
     user = User.create!(username: username, encrypted_token: '') unless user
