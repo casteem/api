@@ -2,7 +2,7 @@ require 'utils'
 require 's_logger'
 
 class HuntTransaction < ApplicationRecord
-  BOUNTY_TYPES = %w(sponsor voting resteem sp_claim posting commenting referral report moderator contribution guardian)
+  BOUNTY_TYPES = %w(sponsor voting resteem sp_claim posting commenting social_share report moderator contribution guardian)
   SP_CLAIM_EXCLUSION = %w(steem steemit misterdelegation)
 
   validates_presence_of :amount, :memo, :sender, :receiver
@@ -40,6 +40,10 @@ class HuntTransaction < ApplicationRecord
 
   def self.reward_votings!(username, amount, date)
     reward_user!(username, amount, 'voting', "Daily reward for voting contribution - #{formatted_date(date)}", true)
+  end
+
+  def self.reward_social_shares!(username, amount, date)
+    reward_user!(username, amount, 'social_share', "Daily reward for social shares - #{formatted_date(date)}", true)
   end
 
   # DEPRECATED
