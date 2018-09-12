@@ -13,14 +13,14 @@ task :reward_social_shares => :environment do |t, args|
   referrals = Referral.where(bounty_given: -1)
   user_counts = referrals.group(:user_id).count.sort_by { |c| c[1] }.reverse
   total_count = user_counts.inject(0) { |sum, c| sum + c[1] }
-  logger.log "Total #{total_count} referrals today"
+  logger.log "Total #{total_count} traffic lead today"
 
   # Just info
   referrer_counts = referrals.group(:referrer).count.sort_by { |c| c[1] }.reverse
   referrer_counts.each do |r|
     logger.log "  - #{r[1]} visits from #{r[0]}"
   end
-  logger.log "==", true
+  logger.log "==========", true
 
   if total_count == 0
     logger.log "All bounties have been processed"
@@ -48,6 +48,8 @@ task :reward_social_shares => :environment do |t, args|
 
   referrals.update_all bounty_given: bounty_per_share
 
-  logger.log "== FINISHED SOCIAL SHARE DISTRIBUTION - #{today}: #{formatted_number(total_given)} HUNTs to #{total_count} users", true
+  logger.log "=========="
+  logger.log "FINISHED SOCIAL SHARE DISTRIBUTION - #{formatted_number(total_given)} HUNTs to #{total_count} traffic lead by  #{user_counts.count} users (#{today})"
+  logger.log "==========", true
 end
 
