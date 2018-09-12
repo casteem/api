@@ -11,12 +11,12 @@ task :reward_social_shares => :environment do |t, args|
 
   today = Time.zone.today
   referrals = Referral.where(bounty_given: -1)
-  user_counts = referrals.group(:user_id).count.sort { |c| c[1] }
+  user_counts = referrals.group(:user_id).count.sort_by { |c| c[1] }.reverse
   total_count = user_counts.inject(0) { |sum, c| sum + c[1] }
   logger.log "Total #{total_count} referrals today"
 
   # Just info
-  referrer_counts = referrals.group(:referrer).count.sort { |c| c[1] }
+  referrer_counts = referrals.group(:referrer).count.sort_by { |c| c[1] }.reverse
   referrer_counts.each do |r|
     logger.log "  - #{r[1]} visits from #{r[0]}"
   end
