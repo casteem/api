@@ -16,12 +16,12 @@ class PostsController < ApplicationController
       Post.where('listed_at >= ?', today)
     end
 
-    if days_ago == -1
-      @posts = @posts.where(is_active: true, is_verified: true).order(created_at: :desc).limit(3)
+    @posts = if days_ago == -1
+      @posts.where(is_active: true, is_verified: true).order(created_at: :desc).limit(20).sample(3)
     elsif params[:sort] == 'unverified'
-      @posts = @posts.where(is_verified: false).order(created_at: :asc)
+      @posts.where(is_verified: false).order(created_at: :asc)
     else
-      @posts = @posts.where(is_active: true).order(@sort)
+      @posts.where(is_active: true).order(@sort)
     end
 
     render json: @posts.as_json(except: [:active_votes])
