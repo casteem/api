@@ -23,12 +23,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :hunt_transactions, only: [:index] do
-    collection do
-      post 'sp_claim'
-    end
-  end
-
+  resources :hunt_transactions, only: [:index]
   resources :erc_transactions, only: [:create]
   resources :referral, only: [:create]
 
