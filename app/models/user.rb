@@ -243,7 +243,7 @@ class User < ApplicationRecord
     if ip_counts && ip_counts > 1
       score *= 1.5 / ip_counts
 
-      alts = User.where(last_ip: self.last_ip).pluck(:username)
+      alts = User.where('last_logged_in_at > ?', 1.month.ago).where(last_ip: self.last_ip).pluck(:username)
       puts "Alt checks: #{score.round(2)} - #{ip_counts} alts: #{alts}" if debug
     end
 
