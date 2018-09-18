@@ -64,7 +64,7 @@ class HuntTransactionsController < ApplicationController
 
   # POST /hunt_transactions/daily_shuffle.json
   def daily_shuffle
-    amount = if rand(1) == 0
+    amount = if rand(200) == 0
       1000 # 0.5% chance for 1,000 jackpot
     else
       (1..20).to_a.map { |x| x * 10 }.sample # average 105 per user per day
