@@ -62,6 +62,22 @@ class HuntTransactionsController < ApplicationController
     }
   end
 
+  # POST /hunt_transactions/daily_shuffle.json
+  def daily_shuffle
+    amount = if rand(1) == 0
+      1000 # 0.5% chance for 1,000 jackpot
+    else
+      (1..20).to_a.map { |x| x * 10 }.sample # average 105 per user per day
+    end
+
+    begin
+      HuntTransaction.reward_daily_shuffle!(@current_user.username, amount, Time.zone.today)
+      render json: { amount: amount }
+    rescue => e
+      render json: { amount: 0 }
+    end
+  end
+
   private
     def user_params
       params.require(:user).permit(:username, :token)

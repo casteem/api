@@ -19,16 +19,19 @@ Rails.application.routes.draw do
 
   resources :users, only: [:create] do
     collection do
-      post 'set_eth_address'
+      # post 'set_eth_address'
     end
   end
 
   resources :hunt_transactions, only: [:index] do
     collection do
       get 'stats'
+      post 'daily_shuffle'
     end
   end
-  resources :erc_transactions, only: [:create]
+
+  # resources :erc_transactions, only: [:create]
+
   resources :referral, only: [:create]
 
   get '*foo', to: lambda { |env| [404, {}, [ '{"error": "NOT_FOUND"}' ]] }
