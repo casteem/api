@@ -23,7 +23,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :hunt_transactions, only: [:index]
+  resources :hunt_transactions, only: [:index] do
+    collection do
+      get 'stats'
+    end
+  end
   resources :erc_transactions, only: [:create]
   resources :referral, only: [:create]
 
