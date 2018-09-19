@@ -3,11 +3,11 @@ class ReferralController < ApplicationController
 
   def create
     unless user = User.find_by(username: params[:ref])
-      render head: :not_found and return
+      render status: :not_found and return # 404
     end
 
     if request.user_agent =~ BOT_UA
-      render head: :not_acceptable and return
+      render status: :not_acceptable and return # 422
     end
 
     begin
@@ -19,9 +19,9 @@ class ReferralController < ApplicationController
         user_agent: request.user_agent
       )
 
-      render head: :ok
+      render status: :ok # 200
     rescue ActiveRecord::RecordNotUnique
-      render head: :conflict
+      render status: :conflict # 409
     end
   end
 end
