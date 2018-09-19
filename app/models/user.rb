@@ -239,22 +239,13 @@ class User < ApplicationRecord
     end
     puts "Age check: #{score} - #{(Time.now - self.created_at).round / 86400} days" if debug
 
-    ip_counts = User.where('last_logged_in_at > ?', 1.month.ago).group(:last_ip).count[self.last_ip]
-    if ip_counts && ip_counts > 1
-      score *= 1.5 / ip_counts
-
-      alts = User.where('last_logged_in_at > ?', 1.month.ago).where(last_ip: self.last_ip).pluck(:username)
-      puts "Alt checks: #{score.round(2)} - #{ip_counts} alts: #{alts}" if debug
-    end
-
     if external_blacklist?
-      score *= 0.5
+      score *= 0.3
       puts "External blacklists: #{score.round(2)}" if debug
     end
 
-    # TODO: follower count
-    # TODO: Steemit post, comment count
     # TODO: FB login
+    # TODO: Steem-UA
 
     score
   end
