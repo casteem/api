@@ -8,6 +8,11 @@ class PostsController < ApplicationController
   # GET /posts
   def index
     days_ago = params[:days_ago].to_i
+    days_ago = if days_ago > 365
+      365
+    elsif days_ago < 0
+      0
+    end
     today = Time.zone.today.to_time
 
     @posts = if days_ago > 0
