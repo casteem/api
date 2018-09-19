@@ -25,7 +25,7 @@ Rails.application.routes.draw do
 
   resources :hunt_transactions, only: [:index] do
     collection do
-      get 'status'
+      get 'stats'
     end
   end
   resources :erc_transactions, only: [:create]

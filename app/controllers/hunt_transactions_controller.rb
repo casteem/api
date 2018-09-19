@@ -1,5 +1,5 @@
 class HuntTransactionsController < ApplicationController
-  before_action :ensure_login!, except: [:status]
+  before_action :ensure_login!, except: [:stats]
 
   # GET /hunt_transactions.json
   def index
@@ -21,10 +21,11 @@ class HuntTransactionsController < ApplicationController
     }
   end
 
-  def status
-    sum = Rails.cache.fetch('statufds', expires_in: 1.second) do
+  def stats
+    now = Time.zone.now
+    sum = Rails.cache.fetch('transaction-stats', expires_in: 10.minutes) do
       {
-        record_time: Time.now.strftime("%B #{Time.now.day.ordinalize}, %Y"),
+        record_time: now.strftime("%B #{now.day.ordinalize}, %Y"),
         airdrops: HuntTransaction.group(:bounty_type).sum(:amount)
       }
     end
@@ -56,7 +57,7 @@ class HuntTransactionsController < ApplicationController
     render json: {
       record_time: sum[:record_time],
       total: sum[:airdrops].values.sum.to_f,
-      days_passed: (DateTime.now - "2018-05-22".to_datetime).to_i,
+      days_passed: (now.to_date - "2018-05-22".to_date).to_i,
       airdrops: Hash[airdrops.sort_by {|k, v| v[:data] }.reverse]
     }
   end
