@@ -33,3 +33,6 @@ Thumbs.db
 
 # Pre-subscription
 public/*
+lib/tasks/database_report.rake
+app/views/database_report.html.erb
+database_report.html
