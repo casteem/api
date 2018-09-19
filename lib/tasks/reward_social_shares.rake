@@ -4,7 +4,7 @@ require 'utils'
 
 desc 'Reward Social Shares'
 task :reward_social_shares => :environment do |t, args|
-  HUNT_DISTRIBUTION_SOCIAL = 90000
+  HUNT_DISTRIBUTION_SOCIAL = 90000.0
 
   logger = SLogger.new('reward-log')
   logger.log "\n==========\n#{HUNT_DISTRIBUTION_SOCIAL} HUNT DISTRIBUTION ON SOCIAL SHARES", true
