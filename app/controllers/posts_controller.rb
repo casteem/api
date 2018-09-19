@@ -10,7 +10,7 @@ class PostsController < ApplicationController
     days_ago = params[:days_ago].to_i
     days_ago = if days_ago > 365
       365
-    elsif days_ago < 0
+    elsif days_ago < -1
       0
     end
     today = Time.zone.today.to_time
