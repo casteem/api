@@ -27,16 +27,6 @@ class PostsController < ApplicationController
       @posts.where(is_active: true).order(@sort)
     end
 
-    if days_ago > 0
-      limit = params[:top] || 10
-
-      @posts = if params[:all] == 'true'
-        @posts.offset(limit)
-      else
-        @posts.limit(limit)
-      end
-    end
-
     render json: @posts.as_json(except: [:active_votes])
   end
 
