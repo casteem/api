@@ -20,7 +20,7 @@ class PostsController < ApplicationController
     end
 
     @posts = if days_ago == -1
-      @posts.where(is_active: true, is_verified: true).order(created_at: :desc).limit(20).sample(3)
+      @posts.where(is_active: true, is_verified: true).order(created_at: :desc)
     elsif params[:sort] == 'unverified'
       @posts.where(is_verified: false).order(created_at: :asc)
     else
@@ -38,6 +38,8 @@ class PostsController < ApplicationController
       else
         @posts.limit(limit)
       end
+    elsif days_ago == -1
+      @posts = @posts.limit(20).sample(3)
     end
 
     render json: {
