@@ -27,9 +27,6 @@ class PostsController < ApplicationController
       @posts.where(is_active: true).order(@sort)
     end
 
-    total_count = @posts.count
-    total_payout = @posts.sum(:payout_value)
-
     if days_ago > 0
       limit = params[:top] || 10
 
@@ -40,11 +37,7 @@ class PostsController < ApplicationController
       end
     end
 
-    render json: {
-      total_count: total_count,
-      total_payout: total_payout,
-      posts: @posts.as_json(except: [:active_votes])
-    }
+    render json: @posts.as_json(except: [:active_votes])
   end
 
   def top
