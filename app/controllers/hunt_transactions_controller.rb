@@ -1,5 +1,5 @@
 class HuntTransactionsController < ApplicationController
-  before_action :ensure_login!, except: [:stats]
+  before_action :ensure_login!, except: [:stats, :extensions]
 
   # GET /hunt_transactions.json
   def index
@@ -78,6 +78,18 @@ class HuntTransactionsController < ApplicationController
       render json: { amount: amount }
     rescue => e
       render json: { amount: 0 }
+    end
+  end
+
+  # POST /hunt_transactions/extensions.json
+  def extensions
+    user = User.find_by(username: params[:username])
+
+    if user
+      # TODO: Extension bounty
+      render json: { result: 'ok' }
+    else
+      render json: { error: 'USER_NOT_FOUND' }
     end
   end
 

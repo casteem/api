@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     collection do
       get 'stats'
       post 'daily_shuffle'
+      post 'extensions'
     end
   end
 
