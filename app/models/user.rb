@@ -82,15 +82,13 @@ class User < ApplicationRecord
     out.to_i
   end
 
-  def validate!(token)
+  def validate_token(token)
     res = User.fetch_with_token(token)
 
     if res['user'] == self.username
-      self.update!(
-        encrypted_token: Digest::SHA256.hexdigest(token),
-        reputation: User.rep_score(res['account']['reputation']),
-        vesting_shares: res['account']['vesting_shares'].to_f
-      )
+      self.encrypted_token = Digest::SHA256.hexdigest(token)
+      self.reputation = User.rep_score(res['account']['reputation'])
+      self.vesting_shares = res['account']['vesting_shares'].to_f
 
       true
     else

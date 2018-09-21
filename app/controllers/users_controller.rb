@@ -12,7 +12,7 @@ class UsersController < ApplicationController
       )
     end
 
-    unless @user.validate!(user_params[:token])
+    unless @user.validate_token(user_params[:token])
       render json: { error: 'UNAUTHORIZED' }, status: :unauthorized and return
     end
 
