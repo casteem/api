@@ -33,11 +33,7 @@ class PostsController < ApplicationController
     if days_ago > 0
       limit = params[:top] || 10
 
-      @posts = if params[:all] == 'true'
-        @posts.offset(limit)
-      else
-        @posts.limit(limit)
-      end
+      @posts = @posts.limit(limit) unless params[:all] == 'true'
     elsif days_ago == -1
       @posts = @posts.limit(20).sample(3)
     end
