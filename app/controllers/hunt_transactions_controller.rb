@@ -50,7 +50,7 @@ class HuntTransactionsController < ApplicationController
         label: "Social Shares", data: sum[:airdrops]['social_share'].to_f, disabled: false
       },
       participants: {
-        label: 'Daily Activity Participants', data: sum[:airdrops]['daily_shuffle'].to_f, disabled: false
+        label: 'Daily Activity Participants', data: (sum[:airdrops]['daily_shuffle'] + sum[:airdrops]['browser_extension']).to_f, disabled: false
       },
       resteemers: {
         label: "Resteemers (Discontinued)", data: sum[:airdrops]['resteem'].to_f, disabled: true
