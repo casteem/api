@@ -86,8 +86,12 @@ class HuntTransactionsController < ApplicationController
     user = User.find_by(username: params[:username])
 
     if user
-      # TODO: Extension bounty
-      render json: { result: 'ok' }
+      begin
+        HuntTransaction.reward_browser_extension!(user.username, Time.zone.today)
+        render json: { result: 'ok' }
+      rescue => e
+        render json: { result: 'already given' }
+      end
     else
       render json: { error: 'USER_NOT_FOUND' }
     end

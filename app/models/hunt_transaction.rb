@@ -2,7 +2,7 @@ require 'utils'
 require 's_logger'
 
 class HuntTransaction < ApplicationRecord
-  BOUNTY_TYPES = %w(sponsor voting resteem sp_claim social_share report moderator contribution guardian daily_shuffle)
+  BOUNTY_TYPES = %w(sponsor voting resteem sp_claim social_share report moderator contribution guardian daily_shuffle browser_extension)
   SP_CLAIM_EXCLUSION = %w(steem steemit misterdelegation)
 
   validates_presence_of :amount, :memo, :sender, :receiver
@@ -50,6 +50,10 @@ class HuntTransaction < ApplicationRecord
     reward_user!(username, amount, 'daily_shuffle', "Shuffle button lottery - #{formatted_date(date)}", true)
   end
 
+  def self.reward_browser_extension!(username, date)
+    reward_user!(username, 100, 'browser_extension', "Browser extension installed - #{formatted_date(date)}", true)
+  end
+
   # DEPRECATED
   # def self.reward_resteems!(username, amount, date)
   #   reward_user!(username, amount, 'resteem', "Daily reward for resteem contribution - #{formatted_date(date)}", true)
@@ -65,7 +69,7 @@ class HuntTransaction < ApplicationRecord
 
   private_class_method def self.reward_user!(username, amount, bounty_type, memo, check_dups = false)
     return if amount == 0
-    raise 'Duplicated Rewards' if check_dups && self.exists?(receiver: username, memo: memo)
+    raise 'Duplicated Rewards' if check_dups && self.exists?(receiver: username, bounty_type: bounty_type, memo: memo)
     raise 'Cannot reward Steemhunt' if username == 'steemhunt'
 
     user = User.find_by(username: username)
