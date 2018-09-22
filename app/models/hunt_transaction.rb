@@ -51,7 +51,7 @@ class HuntTransaction < ApplicationRecord
   end
 
   def self.reward_browser_extension!(username, date)
-    reward_user!(username, 100, 'browser_extension', "Browser extension installed - #{formatted_date(date)}", true)
+    reward_user!(username, 100, 'browser_extension', "Installation of browser extension - #{formatted_date(date)}", true)
   end
 
   # DEPRECATED
