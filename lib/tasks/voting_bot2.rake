@@ -359,7 +359,7 @@ task :voting_bot2 => :environment do |t, args|
     if posts_to_skip.include?(post.id)
       logger.log "--> SKIPPED_POST (#{i + 1}/#{posts.size})"
     else
-      sleep(20) unless TEST_MODE
+      sleep(3) unless TEST_MODE
       res = do_vote(post.author, post.permlink, voting_weight[0], logger)
       # logger.log "--> VOTED_POST: #{res.inspect}"
       res = do_comment(post.author, post.permlink, logger)
