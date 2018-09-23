@@ -108,7 +108,7 @@ class User < ApplicationRecord
     retries = 0
 
     begin
-      uri = URI.parse('https://v2.steemconnect.com/api/me')
+      uri = URI.parse('https://steemconnect.com/api/me')
       https = Net::HTTP.new(uri.host, uri.port)
       https.use_ssl = true
       header = {
