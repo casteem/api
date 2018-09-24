@@ -83,7 +83,6 @@ class PostsController < ApplicationController
         to_tsvector('english', immutable_array_to_string(tags, ' ')) as document
       FROM posts) posts
     """).
-      where(is_active: true).
       where("url LIKE '#{raw_query}%' OR lower(title) LIKE '#{raw_query.downcase}%' OR posts.document @@ to_tsquery('english', '#{no_space} | #{terms.join(' & ')}')").
       order({ hunt_score: :desc }).limit(50)
 
