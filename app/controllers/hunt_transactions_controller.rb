@@ -67,14 +67,14 @@ class HuntTransactionsController < ApplicationController
 
   # POST /hunt_transactions/daily_shuffle.json
   def daily_shuffle
-    amount = if rand(200) == 0
-      1000 # 0.5% chance for 1,000 jackpot
+    amount = if rand(1000) == 0
+      1000 # 0.1% chance for 1,000 jackpot
     else
-      (1..20).to_a.map { |x| x * 10 }.sample # average 105 per user per day
+      (1..10).to_a.map { |x| x * 10 }.sample # average 55.0 * 4 = 220 per user per day
     end
 
     begin
-      HuntTransaction.reward_daily_shuffle!(@current_user.username, amount, Time.zone.today)
+      HuntTransaction.reward_daily_shuffle!(@current_user.username, amount, Time.zone.today, Time.zone.now)
       render json: { amount: amount }
     rescue => e
       render json: { amount: 0 }

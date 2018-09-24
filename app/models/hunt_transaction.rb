@@ -46,8 +46,18 @@ class HuntTransaction < ApplicationRecord
     reward_user!(username, amount, 'social_share', "Daily reward for social shares - #{formatted_date(date)}", true)
   end
 
-  def self.reward_daily_shuffle!(username, amount, date)
-    reward_user!(username, amount, 'daily_shuffle', "Shuffle button lottery - #{formatted_date(date)}", true)
+  def self.reward_daily_shuffle!(username, amount, date, now)
+    section = if now >= date + 18.hours
+      4
+    elsif now >= date + 12.hours
+      3
+    elsif now >= date + 6.hours
+      2
+    else
+      1
+    end
+
+    reward_user!(username, amount, 'daily_shuffle', "Shuffle button lottery - ##{section} - #{formatted_date(date)}", true)
   end
 
   def self.reward_browser_extension!(username, date)
