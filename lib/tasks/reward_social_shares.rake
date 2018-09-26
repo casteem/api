@@ -5,6 +5,7 @@ require 'utils'
 desc 'Reward Social Shares'
 task :reward_social_shares => :environment do |t, args|
   HUNT_DISTRIBUTION_SOCIAL = 90000.0
+  MAX_BOUNTY_PER_SHARE = 100
 
   logger = SLogger.new('reward-log')
   logger.log "\n==========\n#{HUNT_DISTRIBUTION_SOCIAL} HUNT DISTRIBUTION ON SOCIAL SHARES", true
@@ -29,7 +30,7 @@ task :reward_social_shares => :environment do |t, args|
 
   # 1/n of total bounty / Max 100 HUNTs
   bounty_per_share = HUNT_DISTRIBUTION_SOCIAL / total_count
-  bounty_per_share = 100 if bounty_per_share > 100
+  bounty_per_share = MAX_BOUNTY_PER_SHARE if bounty_per_share > MAX_BOUNTY_PER_SHARE
 
   total_given = 0
   user_counts.each do |c|
