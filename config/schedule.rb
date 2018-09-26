@@ -22,9 +22,9 @@ every :day, at: '4:00am' do
   command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} cleanup_hidden_posts"
 end
 
-every :day, at: '5:00am' do
-  command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} daily_post"
-end
+# every :day, at: '5:00am' do
+#   command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} daily_post"
+# end
 
 every :day, at: '06:00am' do
   command "cd #{ROOT_DIR};RAILS_ENV=#{environment} #{RAKE_PATH} dump"
