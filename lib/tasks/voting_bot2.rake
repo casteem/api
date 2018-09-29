@@ -22,7 +22,7 @@ task :voting_bot2 => :environment do |t, args|
   TEST_MODE = false # Should be false on production
   # NOTE: it's more like 1100 as vp decays recursively depending on the current vp
   # We keep 100 for contributor votings
-  TOTAL_VP_TO_USE = 800.0
+  TOTAL_VP_TO_USE = 1050.0
   POWER_TOTAL_POST = if TEST_MODE || current_voting_power > 99.99
     TOTAL_VP_TO_USE
   else
