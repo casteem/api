@@ -335,8 +335,8 @@ class User < ApplicationRecord
     puts "Active Curation Advantage: #{score.round(2)}" if debug
 
     # Circle voting penalty
-    if self.circle_vote_count > 20
-      score *= (20.0 / self.circle_vote_count)
+    if self.circle_vote_count > 15
+      score *= (15.0 / self.circle_vote_count)
     end
     puts "Circle Voting: #{score.round(2)} (JS: #{self.circle_vote_count})" if debug
 
