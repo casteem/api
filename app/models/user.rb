@@ -29,7 +29,7 @@ class User < ApplicationRecord
 
   scope :whitelist, -> {
     where('last_logged_in_at >= ?', Time.zone.today.to_time).
-    where.not(encrypted_token: '').where('reputation >= ?', 35).
+    where('cached_user_score >= ?', LEVEL_TIER[0]).
     where('blacklisted_at IS NULL OR blacklisted_at < ?', 1.month.ago)
   }
 
@@ -173,7 +173,7 @@ class User < ApplicationRecord
     return 0 unless dau?
     return 0 if blacklist?
 
-    user_score * weight * 0.01 * boost_score
+    (user_score * weight * 0.01 * boost_score).to_f
   end
 
   def level
