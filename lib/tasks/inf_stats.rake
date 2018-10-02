@@ -41,7 +41,7 @@ task :inf_stats, [:days] => :environment do |t, args|
 
   # Score is based on the efficiency (boosted by voting count)
   inf_scores.each do |k, v|
-    boost = inf_counts[k] / 50.0
+    boost = inf_counts[k] / (days * 3.5)
     boost = 2.0 if boost > 2
     inf_scores[k] = inf_counts[k] == 0 ? 0 : (boost * v / inf_counts[k])
   end
