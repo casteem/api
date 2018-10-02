@@ -39,8 +39,12 @@ task :inf_stats, [:days] => :environment do |t, args|
     end
   end
 
-  # Score is based on the efficiency
-  inf_scores.each { |k, v| inf_scores[k] = v / inf_counts[k] rescue 0 }
+  # Score is based on the efficiency (boosted by voting count)
+  inf_scores.each do |k, v|
+    boost = inf_counts[k] / 50.0
+    boost = 2.0 if boost > 2
+    inf_scores[k] = inf_counts[k] == 0 ? 0 : (boost * v / inf_counts[k])
+  end
 
   inf_scores.sort_by { |k, v| v }.reverse.each do |c|
     logger.log "@#{c[0]} - Score: #{c[1].round(2)} / Vote count: #{inf_counts[c[0]]}"
