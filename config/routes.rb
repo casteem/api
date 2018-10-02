@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  post 'phone_number/send_sms'
+  post 'phone_number/verify'
+
   resources :posts, only: [:index, :create] do
     collection do
       get 'exists'
