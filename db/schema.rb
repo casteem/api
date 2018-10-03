@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_10_02_091420) do
+ActiveRecord::Schema.define(version: 2018_10_03_044414) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -45,6 +45,7 @@ ActiveRecord::Schema.define(version: 2018_10_02_091420) do
     t.integer "pin_sent", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "pin_sent_at"
   end
 
   create_table "posts", force: :cascade do |t|
