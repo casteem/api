@@ -13,16 +13,40 @@ class PostsController < ApplicationController
 
     today = Time.zone.today.to_time
 
-    @posts = if days_ago > 0
-      Post.where('listed_at >= ? AND listed_at < ?', today - days_ago.days, today - (days_ago - 1).days)
-    else # Today
-      Post.where('listed_at >= ?', today)
+    if days_ago > 0
+      @posts = Post.where('listed_at >= ? AND listed_at < ?', today - days_ago.days, today - (days_ago - 1).days)
+    else # Today (0) or Most recent (-1)
+      recent_count = Post.where('listed_at >= ?', today).where(is_active: true, is_verified: true).count
+      @posts = Post.where('listed_at >= ?', today)
+
+      # Remove Today section if there're less than 20 approved recent posts
+      # and put all posts into Most Recent section, random sorted.
+      if recent_count < 20
+        if days_ago == -1
+          @posts = @posts.where(is_active: true).order('random()')
+
+          render json: {
+            total_count: @posts.count,
+            total_payout: @posts.sum(:payout_value),
+            posts: @posts
+          }
+        else
+          render json: {
+            total_count: 0,
+            total_payout: 0,
+            posts: []
+          }
+        end
+
+        return
+      end
     end
 
-    @posts = if days_ago == -1
-      @posts.where(is_active: true, is_verified: true).order(created_at: :desc)
-    elsif params[:sort] == 'unverified'
+    # Sort params
+    @posts = if params[:sort] == 'unverified'
       @posts.where(is_verified: false).order(created_at: :asc)
+    elsif days_ago == -1
+      @posts.where(is_active: true, is_verified: true).order(created_at: :asc)
     else
       @posts.where(is_active: true).order(@sort)
     end
